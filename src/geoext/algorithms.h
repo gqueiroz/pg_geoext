@@ -25,18 +25,21 @@
 #include "decls.h"
 
 /*
- * Computes the euclidean distance between two points based on the naive formula:
- *   sqrt( dx^2 + dy^2 )
+ * \brief Computes the euclidean distance between two points.
+ * 
+ * \note This function is based on the naive formula: \f$\sqrt{(x_2-x_1)^2+(y_2-y_1)^2}\f$.
  *
  */
 double euclidian_distance(coord2d* c1, coord2d* c2);
 
 /*
- * Tells if a point is inside a polygon.
+ * \brief Tells if a point is inside a polygon.
  *
  * This algorithm is based on crossings test.
  * For a detailed explanation of the algorithm, please, see:
  *   Haines, Eric. Point in Polygon Strategies. Graphics Gems IV, ed. Paul Heckbert, Academic Press, p. 24-46, 1994.
+ *
+ * \note This implementation follows the code presented at: http://erich.realtimerendering.com/ptinpoly.
  *
  */
 int point_in_polygon(coord2d* pt, coord2d* poly, int num_vertices);
