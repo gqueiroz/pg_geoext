@@ -29,4 +29,6 @@ get_filename_component(PG_GEOEXT_ABSOLUTE_ROOT_DIR "../../" ABSOLUTE)
 
 include_directories(${PG_GEOEXT_ABSOLUTE_ROOT_DIR}/src)
 
+find_package(PostgreSQL)
+
 add_subdirectory(unittest_algorithms)
