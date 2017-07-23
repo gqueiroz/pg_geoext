@@ -1,0 +1,3 @@
+GeoExt is a GeoSpatial extension prototype for teaching spatial database classes.
+
+It will work only with PostgreSQL 9.5 or above.

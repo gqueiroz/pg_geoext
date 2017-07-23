@@ -18,11 +18,39 @@
   Gilberto Ribeiro de Queiroz at <gribeiro@dpi.inpe.br>.
  */
 
+/*!
+ *
+ * \file geoext/algorithms.h
+ *
+ * \brief Geometric algorithms used in GeoExt
+ *
+ * \author Gilberto Ribeiro de Queiroz
+ * \author Fabiana Zioti
+ *
+ * \date 2017
+ *
+ * \copyright GNU Lesser Public License version 3
+ *
+ * \warning The algorithms implemented here are not robust enough for
+ *          a production environment. However, they will attend the purpose
+ *          of a beginner's spatial database course.
+ *
+ */
+
 #ifndef __GEOEXT_ALGORITHMS_H__
 #define __GEOEXT_ALGORITHMS_H__
 
+
 /* GeoExt */
 #include "decls.h"
+
+
+/*
+ * \brief Tells if c1 and c2 are coincidents.
+ *
+ */
+int equals(struct coord2d* c1, struct coord2d* c2);
+
 
 /*
  * \brief Computes the euclidean distance between two points.
@@ -30,7 +58,8 @@
  * \note This function is based on the naive formula: \f$\sqrt{(x_2-x_1)^2+(y_2-y_1)^2}\f$.
  *
  */
-double euclidian_distance(coord2d* c1, coord2d* c2);
+double euclidian_distance(struct coord2d* c1, struct coord2d* c2);
+
 
 /*
  * \brief Tells if a point is inside a polygon.
@@ -39,9 +68,15 @@ double euclidian_distance(coord2d* c1, coord2d* c2);
  * For a detailed explanation of the algorithm, please, see:
  *   Haines, Eric. Point in Polygon Strategies. Graphics Gems IV, ed. Paul Heckbert, Academic Press, p. 24-46, 1994.
  *
+ * See also the nice homepage of W. Randolph Franklin:
+ *   https://wrf.ecse.rpi.edu//Research/Short_Notes/pnpoly.html
+ *
  * \note This implementation follows the code presented at: http://erich.realtimerendering.com/ptinpoly.
  *
  */
-int point_in_polygon(coord2d* pt, coord2d* poly, int num_vertices);
+int point_in_polygon(struct coord2d* pt,
+                     struct coord2d* poly,
+                     int num_vertices);
+
 
 #endif  /* __GEOEXT_ALGORITHMS_H__ */

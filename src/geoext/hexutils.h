@@ -20,9 +20,9 @@
 
 /*!
  *
- * \file geoext/decls.h
+ * \file geoext/hexutils.h
  *
- * \brief GeoExt basic data types.
+ * \brief Hex-utilities for GeoExt.
  *
  * \author Gilberto Ribeiro de Queiroz
  * \author Fabiana Zioti
@@ -33,21 +33,27 @@
  *
  */
 
-#ifndef __GEOEXT_DECLS_H__
-#define __GEOEXT_DECLS_H__
+#ifndef __GEOEXT_HEXUTILS_H__
+#define __GEOEXT_HEXUTILS_H__
+
 
 /*
- * \brief A coord2d represents a pair of coordinates in a 2D-space.
+ * \brief Encode the byte array to a null terminated hex-string.
  *
- * It is just an utility type for building more complex data types.
- * So, this type will not be available in the PostgreSQL type system.
- * Instead, look at type geo_point, geo_linestring and geo_polygon.
+ * \note Clients of this function must assure that the buffer pointed by
+ *       'hex_str' has enough space for encoding the data. This means: 2 * length(byte_str) + 1.
  *
  */
-struct coord2d
-{
-  double x;
-  double y;
-};
+void binary2hex(const char *byte_str, int size, char *hex_str);
 
-#endif  /* __GEOEXT_DECLS_H__ */
+
+/*
+ * \brief Decode an hex-string to a byte array.
+ *
+ * \note Clients of this function must assure that the buffer pointed by
+ *       'byte_str' has enough space for decoding the data.
+ *
+ */
+void hex2binary(const char *hex_str, int h_size, char *byte_str);
+
+#endif  /* __GEOEXT_HEXUTILS_H__ */

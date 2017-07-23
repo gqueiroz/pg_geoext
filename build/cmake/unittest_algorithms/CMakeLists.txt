@@ -26,9 +26,11 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -pedantic -std=c99 -Winline")
 include_directories(${PG_GEOEXT_ABSOLUTE_ROOT_DIR}/src/geoext)
 
 set(PG_GEOEXT_SRC_FILES "${PG_GEOEXT_ABSOLUTE_ROOT_DIR}/src/geoext/algorithms.c"
+                        "${PG_GEOEXT_ABSOLUTE_ROOT_DIR}/src/geoext/hexutils.c"
                         "${PG_GEOEXT_ABSOLUTE_ROOT_DIR}/src/unittest/algorithms/main.c")
 
 set(PG_GEOEXT_HDR_FILES "${PG_GEOEXT_ABSOLUTE_ROOT_DIR}/src/geoext/algorithms.h"
+                        "${PG_GEOEXT_ABSOLUTE_ROOT_DIR}/src/geoext/hexutils.h"
                         "${PG_GEOEXT_ABSOLUTE_ROOT_DIR}/src/geoext/decls.h")
 
 #file(GLOB PG_GEOEXT_SRC_FILES ${PG_GEOEXT_ABSOLUTE_ROOT_DIR}/src/geoext/*.c)

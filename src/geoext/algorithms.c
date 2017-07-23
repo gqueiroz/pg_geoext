@@ -30,17 +30,26 @@
  * \date 2017
  *
  * \copyright GNU Lesser Public License version 3
+ *
  */
 
 /* GeoExt */
 #include "algorithms.h"
+
 
 /* C Standard Library */
 #include <assert.h>
 #include <ctype.h>
 #include <math.h>
 
-double euclidian_distance(coord2d* c1, coord2d* c2)
+
+int equals(struct coord2d *c1, struct coord2d *c2)
+{
+  return (c1->x == c2->x) && (c1->y == c2->y);
+}
+
+
+double euclidian_distance(struct coord2d *c1, struct coord2d *c2)
 {
   double dx = c1->x - c2->x;
 
@@ -51,29 +60,32 @@ double euclidian_distance(coord2d* c1, coord2d* c2)
   return result;
 }
 
-int point_in_polygon(coord2d* pt, coord2d* poly, int num_vertices)
+
+int point_in_polygon(struct coord2d *pt,
+                     struct coord2d *poly,
+                     int num_vertices)
 {
-  coord2d *vtx0;   /* The first vertex of the current segment being processed. */
-  coord2d *vtx1;   /* The second vertex of the current segment being processed. */
-  int yflag0;      /* The result of a above/below Y axis test for vertex0. */
-  int yflag1;      /* The result of a above/below Y axis test for vertex1. */
-  int xflag0;      /* The result of a left/right test for vertex0.*/
-  int inside_flag = 0; /* At each cross of a +X ray starting at pt->x and pt->y
-                          this variable will be changed from 0 to 1
-                          or, from 1 to 0. */
+  struct coord2d *vtx0;  /* The first vertex of the current segment being processed. */
+  struct coord2d *vtx1;  /* The second vertex of the current segment being processed. */
+  int yflag0;            /* The result of a above/below Y axis test for vertex0. */
+  int yflag1;            /* The result of a above/below Y axis test for vertex1. */
+  int xflag0;            /* The result of a left/right test for vertex0.*/
+  int inside_flag = 0;   /* At each cross of a +X ray starting at pt->x and pt->y
+                            this variable will be changed from 0 to 1
+                            or, from 1 to 0. */
 
 /* assure that the informed polygon have at least four points */
   assert(num_vertices > 3);
 
 /* get test bit for above/below X axis for first vertex */
   vtx0 = poly;
-
+  
   yflag0 = ( vtx0->y >= pt->y );
 
   for( int i = 1 ; i != num_vertices ; ++i)
   {
     vtx1 = poly + i;
-
+    
     yflag1 = ( vtx1->y >= pt->y );
 
 /* check if endpoints straddle (are on opposite sides) of X axis
@@ -106,6 +118,7 @@ int point_in_polygon(coord2d* pt, coord2d* poly, int num_vertices)
     yflag0 = yflag1;
     vtx0 = vtx1;
   }
-
+  
   return inside_flag;
 }
+
