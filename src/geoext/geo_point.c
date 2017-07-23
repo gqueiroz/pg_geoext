@@ -20,9 +20,9 @@
 
 /*!
  *
- * \file geoext/geoext.c
+ * \file geoext/geo_point.c
  *
- * \brief GeoExt spatial types for PostgreSQL.
+ * \brief A geo_point is bidimensional point that can be associated to a spatial reference system.
  *
  * \author Gilberto Ribeiro de Queiroz
  * \author Fabiana Zioti
@@ -34,14 +34,13 @@
  */
 
 /* GeoExtension */
-#include "geoext.h"
+#include "geo_point.h"
 #include "algorithms.h"
 #include "hexutils.h"
 #include "wkt.h"
 
 
 /* PostgreSQL */
-/*#include "miscadmin.h"*/
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
 
@@ -62,27 +61,9 @@
 #define GEOEXT_GEOPOINT_HEX_LEN ( ( 2 * GEOEXT_GEOPOINT_SIZE ) )
 
 
-/* Prototype definitions */
-void _PG_init(void);
-
-void _PG_fini(void);
-
-
-/* Note: assure that this is the only PG_MODULE_MAGIC definition in the whole extension! */
-PG_MODULE_MAGIC;
-
-
-void _PG_init()
-{
-  elog(NOTICE, "GeoExtension initialized!");
-}
-
-
-void _PG_fini()
-{
-  elog(NOTICE, "GeoExtension finalized!");
-}
-
+/*
+ * I/O Functions for the geo_point data type
+ */
 
 PG_FUNCTION_INFO_V1(geo_point_in);
 
@@ -194,6 +175,10 @@ geo_point_send(PG_FUNCTION_ARGS)
 }
 
 
+/*
+ * geo_point operations
+ */
+
 PG_FUNCTION_INFO_V1(geo_point_from_text);
 
 Datum
@@ -232,6 +217,8 @@ geo_point_to_str(PG_FUNCTION_ARGS)
 }
 
 
+PG_FUNCTION_INFO_V1(geo_point_distance);
+
 Datum
 geo_point_distance(PG_FUNCTION_ARGS)
 {
@@ -259,4 +246,3 @@ geo_point_distance(PG_FUNCTION_ARGS)
 
   PG_RETURN_FLOAT8(dist);
 }
-

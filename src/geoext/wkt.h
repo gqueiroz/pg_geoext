@@ -42,7 +42,9 @@
 
 
 /* GeoExt */
-#include "geoext.h"
+#include "geo_linestring.h"
+#include "geo_point.h"
+#include "geo_polygon.h"
 
 
 /*
