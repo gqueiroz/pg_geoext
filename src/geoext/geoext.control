@@ -1,0 +1,6 @@
+# GeoExtension
+# which will be installed into prefix/share/extension
+comment = 'geoext datatype'
+default_version = '0.1.0'
+module_pathname = '$libdir/geoext'
+relocatable = true
