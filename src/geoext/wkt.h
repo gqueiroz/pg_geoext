@@ -71,7 +71,6 @@ void geo_point_wkt_decode(char *str, struct geo_point *pt);
 /*
  * \brief Convert a geo_point to a WKT string.
  *
- * \param str A string with the following format: 'POINT(x y)'.
  * \param pt  A geo_point data.
  *
  */
@@ -82,10 +81,19 @@ char* geo_point_wkt_encode(struct geo_point *pt);
  * \brief Convert a WKT string to a geo_linestring.
  *
  * \param str  A string with the following format: 'LINESTRING(X1 Y1, X2 Y2, ..., Xn Yn)'.
- * \param lstr A geo_linestring data.
+ * \param lstr A geo_linestring data (the npts field must have been set before).
  *
  */
-/*void geo_linestring_wkt_decode(char *str, struct geo_linestring* lstr);*/
+void geo_linestring_wkt_decode(char *str, struct geo_linestring* lstr);
+
+
+/*
+ * \brief Convert a geo_linestring to a WKT string.
+ *
+ * \param pt  A geo_linestring data.
+ *
+ */
+char* geo_linestring_wkt_encode(struct geo_linestring *line);
 
 
 /*

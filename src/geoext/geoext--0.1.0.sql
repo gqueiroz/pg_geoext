@@ -24,15 +24,21 @@
 \echo Use "CREATE EXTENSION geoext" to load this file. \quit
 
 
+----------------------------------------
+----------------------------------------
+-- Introduces the geo_point Data Type --
+----------------------------------------
+----------------------------------------
+
 --
--- Drop GeoExt types if they exists and forward their declaration
+-- Drop geo_point type if it exists and forward its declaration
 --
 DROP TYPE IF EXISTS geo_point;
 CREATE TYPE geo_point;
 
 
 --
--- Point Input/Output functions
+-- Point Input/Output Functions
 --
 CREATE OR REPLACE FUNCTION geo_point_in(cstring)
     RETURNS geo_point
@@ -56,9 +62,9 @@ CREATE OR REPLACE FUNCTION geo_point_send(geo_point)
 
 
 --
--- Point functions
+-- Point Operators
 --
-CREATE OR REPLACE FUNCTION from_text(cstring)
+CREATE OR REPLACE FUNCTION point_from_text(cstring)
     RETURNS geo_point
     AS 'MODULE_PATHNAME', 'geo_point_from_text'
     LANGUAGE C IMMUTABLE STRICT;
@@ -75,7 +81,7 @@ CREATE OR REPLACE FUNCTION distance(geo_point, geo_point)
 
 
 --
--- Register GeoExt data types
+-- Register the geo_point Data Type
 --
 CREATE TYPE geo_point(
     input = geo_point_in,
@@ -86,3 +92,78 @@ CREATE TYPE geo_point(
     alignment = double
 );
 
+
+---------------------------------------------
+---------------------------------------------
+-- Introduces the geo_linestring Data Type --
+---------------------------------------------
+---------------------------------------------
+
+--
+-- Drop geo_linestring type if it exists and forward its declaration
+--
+DROP TYPE IF EXISTS geo_linestring;
+CREATE TYPE geo_linestring;
+
+
+--
+-- LineString Input/Output Functions
+--
+CREATE OR REPLACE FUNCTION geo_linestring_in(cstring)
+    RETURNS geo_linestring
+    AS 'MODULE_PATHNAME', 'geo_linestring_in'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION geo_linestring_out(geo_linestring)
+    RETURNS cstring
+    AS 'MODULE_PATHNAME', 'geo_linestring_out'
+    LANGUAGE C IMMUTABLE STRICT;
+
+-- CREATE OR REPLACE FUNCTION geo_linestring_recv(internal)
+--     RETURNS geo_linestring
+--     AS 'MODULE_PATHNAME','geo_linestring_recv'
+--     LANGUAGE C IMMUTABLE STRICT;
+-- 
+-- CREATE OR REPLACE FUNCTION geo_linestring_send(geo_linestring)
+--     RETURNS bytea
+--     AS 'MODULE_PATHNAME', 'geo_linestring_send'
+--     LANGUAGE C IMMUTABLE STRICT;
+
+
+--
+-- LineString Operators
+--
+CREATE OR REPLACE FUNCTION linestring_from_text(cstring)
+    RETURNS geo_linestring
+    AS 'MODULE_PATHNAME', 'geo_linestring_from_text'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION to_str(geo_linestring)
+    RETURNS cstring
+    AS 'MODULE_PATHNAME', 'geo_linestring_to_str'
+    LANGUAGE C IMMUTABLE STRICT;
+
+-- CREATE OR REPLACE FUNCTION is_closed(geo_linestring)
+--     RETURNS boolean
+--     AS 'MODULE_PATHNAME', 'geo_linestring_is_closed'
+--     LANGUAGE C IMMUTABLE STRICT;
+
+-- CREATE OR REPLACE FUNCTION length(geo_linestring)
+--     RETURNS float8
+--     AS 'MODULE_PATHNAME', 'geo_linestring_length'
+--     LANGUAGE C IMMUTABLE STRICT;
+
+
+--
+-- Register the geo_linestring Data Type
+--
+CREATE TYPE geo_linestring
+(
+    input = geo_linestring_in,
+    output = geo_linestring_out,
+--    receive = geo_linestring_recv,
+--    send = geo_linestring_send,
+    internallength = variable,
+    storage = extended,
+    alignment = double
+);

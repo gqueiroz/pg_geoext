@@ -53,11 +53,40 @@
 struct geo_linestring
 {
   int32 vl_len_;  /* Varlena header.                    */
-  int32 npts;     /* Number of points in the polygon.   */
   int32 srid;     /* The Spatial Reference System ID.   */
+  int32 npts;     /* Number of points in the polygon.   */
   int32 dummy;    /* Padding to make it double aligned. */
   struct coord2d coords[FLEXIBLE_ARRAY_MEMBER];   /* The array of polygon vertices.     */
 };
+
+
+/*
+ * geo_linestring is a toastable varlena type.
+ *
+ * Below we have the fmgr interface macros for dealing with a geo_linestring.
+ *
+ */
+#define DatumGetGeoLineStringTypeP(X)      ((struct geo_linestring*) PG_DETOAST_DATUM(X))
+#define PG_GETARG_GEOLINESTRING_TYPE_P(n)  DatumGetGeoLineStringTypeP(PG_GETARG_DATUM(n))
+#define PG_RETURN_GEOLINESTRING_TYPE_P(x)  PG_RETURN_POINTER(x)
+
+
+/*
+ * geo_linestring operations.
+ *
+ */
+extern Datum geo_linestring_in(PG_FUNCTION_ARGS);
+extern Datum geo_linestring_out(PG_FUNCTION_ARGS);
+
+/*extern Datum geo_linestring_recv(PG_FUNCTION_ARGS);
+extern Datum geo_linestring_send(PG_FUNCTION_ARGS);*/
+
+extern Datum geo_linestring_from_text(PG_FUNCTION_ARGS);
+extern Datum geo_linestring_to_str(PG_FUNCTION_ARGS);
+
+/*extern Datum geo_linestring_is_closed(PG_FUNCTION_ARGS);
+extern Datum geo_linestring_length(PG_FUNCTION_ARGS);*/
+/*extern Datum geo_linestring_intersection_points(PG_FUNCTION_ARGS);*/
 
 
 #endif  /* __GEOEXT_GEO_LINESTRING_H__ */

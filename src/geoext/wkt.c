@@ -257,6 +257,7 @@ void geo_point_wkt_decode(char *str, struct geo_point* pt)
   pt->dummy = 0;
 }
 
+
 char* geo_point_wkt_encode(struct geo_point *pt)
 {
   StringInfoData str;
@@ -274,6 +275,75 @@ char* geo_point_wkt_encode(struct geo_point *pt)
 
   pfree(xstr);
   pfree(ystr);
+
+  appendStringInfoChar(&str, GEOEXT_GEOM_RDELIM);
+
+  return str.data;
+}
+
+
+void geo_linestring_wkt_decode(char *str, struct geo_linestring* lstr)
+{
+/* search for the occurence of: 'LINESTRING' */
+  char *cp = strcasestr(str, GEOEXT_GEOLINESTRING_WKT_TOKEN);
+
+/* if the substring 'LINESTRING' is not found in the text, we have an invalid WKT */
+  if (!PointerIsValid(cp))
+    ereport(ERROR,
+            (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+            errmsg("invalid input syntax for type %s: \"%s\"",
+            "geo_linestring", str)));
+
+/* advance cp to one character past the string 'LINESTRING' */
+  cp += GEOEXT_GEOLINESTRING_WKT_TOKEN_LEN;
+
+  coord2d_sequence_decode(cp, lstr->coords, lstr->npts, &cp,
+                          "geo_linestring", str);
+
+/* skip spaces, if any */
+  while (*cp != '\0' && isspace((unsigned char) *cp))
+    ++cp;
+
+/* if we still have characters, the WKT is invalid */
+  if(*cp != '\0')
+    ereport(ERROR,
+            (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+            errmsg("invalid input syntax for type %s: \"%s\"",
+            "geo_linestring", str)));
+
+/*
+  WKT doesn't have provision for SRID.
+  So, let's prevent instability in unused padded-bytes.
+  The DBMS may do wrong decisions if we don't zero all fields!
+ */
+  lstr->srid = 0;
+  lstr->dummy = 0;
+}
+
+
+char* geo_linestring_wkt_encode(struct geo_linestring *line)
+{
+  StringInfoData str;
+
+  initStringInfo(&str);
+
+  appendStringInfoString(&str, GEOEXT_GEOLINESTRING_WKT_TOKEN);
+
+  appendStringInfoChar(&str, GEOEXT_GEOM_LDELIM);
+
+  for(int i = 0; i < line->npts; ++i)
+  {
+    if(i != 0)
+      appendStringInfoString(&str, ", ");
+
+    char *xstr = float8out_internal(line->coords[i].x);
+    char *ystr = float8out_internal(line->coords[i].y);
+
+    appendStringInfo(&str, "%s %s", xstr, ystr);
+
+    pfree(xstr);
+    pfree(ystr);
+  }
 
   appendStringInfoChar(&str, GEOEXT_GEOM_RDELIM);
 
