@@ -54,11 +54,11 @@ PG_MODULE_MAGIC;
 
 void _PG_init()
 {
-  elog(NOTICE, "GeoExtension initialized!");
+  /*elog(NOTICE, "GeoExtension initialized!");*/
 }
 
 
 void _PG_fini()
 {
-  elog(NOTICE, "GeoExtension finalized!");
+  /*elog(NOTICE, "GeoExtension finalized!");*/
 }

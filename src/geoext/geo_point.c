@@ -74,7 +74,7 @@ geo_point_in(PG_FUNCTION_ARGS)
 
   struct geo_point *pt = (struct geo_point*) palloc(sizeof(struct geo_point));
 
-  elog(NOTICE, "geo_point_in called for: %s", str);
+  /*elog(NOTICE, "geo_point_in called for: %s", str);*/
 
   if (!PointerIsValid(str))
     ereport(ERROR, (errcode (ERRCODE_INVALID_PARAMETER_VALUE),
@@ -109,7 +109,7 @@ geo_point_out(PG_FUNCTION_ARGS)
 /* alloc a buffer for hex-string plus a trailing '\0' */
   char *hstr = palloc(GEOEXT_GEOPOINT_HEX_LEN + 1); 
 
-  elog(NOTICE, "geo_point_out called");
+  /*elog(NOTICE, "geo_point_out called");*/
 
   if (!PointerIsValid(pt))
     ereport(ERROR, (errcode (ERRCODE_INVALID_PARAMETER_VALUE),
@@ -130,7 +130,7 @@ geo_point_recv(PG_FUNCTION_ARGS)
 
   struct geo_point *result = (struct geo_point*) palloc(sizeof(struct geo_point));
 
-  elog(NOTICE, "geo_point_recv called");
+  /*elog(NOTICE, "geo_point_recv called");*/
 
   if (!PointerIsValid(buf))
     ereport(ERROR, (errcode (ERRCODE_INVALID_PARAMETER_VALUE),
@@ -159,7 +159,7 @@ geo_point_send(PG_FUNCTION_ARGS)
 
   StringInfoData buf;
 
-  elog(NOTICE, "geo_point_send called");
+  /*elog(NOTICE, "geo_point_send called");*/
 
   if (!PointerIsValid(pt))
     ereport(ERROR, (errcode (ERRCODE_INVALID_PARAMETER_VALUE),
@@ -188,7 +188,7 @@ geo_point_from_text(PG_FUNCTION_ARGS)
 
   struct geo_point *pt = (struct geo_point*) palloc(sizeof(struct geo_point));
 
-  elog(NOTICE, "geo_point_from_text called for: %s", str);
+  /*elog(NOTICE, "geo_point_from_text called for: %s", str);*/
 
   if (!PointerIsValid(pt))
     ereport(ERROR, (errcode (ERRCODE_INVALID_PARAMETER_VALUE),
@@ -207,7 +207,7 @@ geo_point_to_str(PG_FUNCTION_ARGS)
 {
   struct geo_point *pt = PG_GETARG_GEOPOINT_TYPE_P(0);
 
-  elog(NOTICE, "geo_point_to_str called");
+  /*elog(NOTICE, "geo_point_to_str called");*/
 
   if (!PointerIsValid(pt))
     ereport(ERROR, (errcode (ERRCODE_INVALID_PARAMETER_VALUE),
@@ -228,7 +228,7 @@ geo_point_distance(PG_FUNCTION_ARGS)
 
   float8 dist = 0.0;
 
-  elog(NOTICE, "calling geo_point_distance!");
+  /*elog(NOTICE, "calling geo_point_distance!");*/
 
   if(!PointerIsValid(pt1))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),

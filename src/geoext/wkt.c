@@ -247,6 +247,14 @@ void geo_point_wkt_decode(char *str, struct geo_point* pt)
             (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
             errmsg("invalid input syntax for type %s: \"%s\"",
             "geo_point", str)));
+
+/*
+  WKT doesn't have provision for SRID.
+  So, let's prevent instability in unused padded-bytes.
+  The DBMS may do wrong decisions if we don't zero all fields!
+ */
+  pt->srid = 0;
+  pt->dummy = 0;
 }
 
 char* geo_point_wkt_encode(struct geo_point *pt)
