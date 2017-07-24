@@ -143,10 +143,10 @@ CREATE OR REPLACE FUNCTION to_str(geo_linestring)
     AS 'MODULE_PATHNAME', 'geo_linestring_to_str'
     LANGUAGE C IMMUTABLE STRICT;
 
--- CREATE OR REPLACE FUNCTION is_closed(geo_linestring)
---     RETURNS boolean
---     AS 'MODULE_PATHNAME', 'geo_linestring_is_closed'
---     LANGUAGE C IMMUTABLE STRICT;
+CREATE OR REPLACE FUNCTION is_closed(geo_linestring)
+   RETURNS boolean
+   AS 'MODULE_PATHNAME', 'geo_linestring_is_closed'
+   LANGUAGE C IMMUTABLE STRICT;
 
 -- CREATE OR REPLACE FUNCTION length(geo_linestring)
 --     RETURNS float8
@@ -161,8 +161,8 @@ CREATE TYPE geo_linestring
 (
     input = geo_linestring_in,
     output = geo_linestring_out,
---    receive = geo_linestring_recv,
---    send = geo_linestring_send,
+    receive = geo_linestring_recv,
+    send = geo_linestring_send,
     internallength = variable,
     storage = extended,
     alignment = double

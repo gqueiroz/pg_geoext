@@ -309,6 +309,25 @@ geo_linestring_to_str(PG_FUNCTION_ARGS)
   PG_RETURN_CSTRING(geo_linestring_wkt_encode(line));
 }
 
-/*extern Datum geo_linestring_is_closed(PG_FUNCTION_ARGS);*/
+PG_FUNCTION_INFO_V1(geo_linestring_is_closed);
+
+Datum
+geo_linestring_is_closed(PG_FUNCTION_ARGS)
+{
+  struct geo_linestring *line = PG_GETARG_GEOLINESTRING_TYPE_P(0);
+
+  int result;
+
+  /*elog(NOTICE, "geo_linestring_is_closed called");*/
+
+  int final_position = line->npts - 1;
+
+  result = equals(&(line->coords[0]), &(line->coords[final_position]));
+
+  PG_RETURN_BOOL(result);
+}
+
+
+
 /*extern Datum geo_linestring_length(PG_FUNCTION_ARGS);*/
 /*extern Datum geo_linestring_intersection_points(PG_FUNCTION_ARGS);*/
