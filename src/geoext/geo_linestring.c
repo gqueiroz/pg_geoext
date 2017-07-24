@@ -1,7 +1,7 @@
 /*
   Copyright (C) 2017 National Institute For Space Research (INPE) - Brazil.
 
-  This file is part of pg_geoext, a simple PostgreSQL extension for 
+  This file is part of pg_geoext, a simple PostgreSQL extension for
   for teaching spatial database classes.
 
   pg_geoext is free software: you can redistribute it and/or modify
@@ -164,12 +164,100 @@ geo_linestring_out(PG_FUNCTION_ARGS)
   PG_RETURN_CSTRING(hstr);
 }
 
-/*extern Datum geo_linestring_recv(PG_FUNCTION_ARGS);*/
-/*extern Datum geo_linestring_send(PG_FUNCTION_ARGS);*/
+/*
+* geo_linestring_recv: Convert external binary representation to geo_linestring
+*/
+PG_FUNCTION_INFO_V1(geo_linestring_recv);
+
+Datum
+geo_linestring_recv(PG_FUNCTION_ARGS)
+{
+  StringInfo  buf = (StringInfo) PG_GETARG_POINTER(0);
+
+  struct geo_linestring *result = NULL;
+
+  int32 npts;
+
+  int i;
+
+  int base_size;
+
+  int size;
+
+  /*elog(NOTICE, "geo_linestring_recv called");*/
+
+  if (!PointerIsValid(buf))
+    ereport(ERROR, (errcode (ERRCODE_INVALID_PARAMETER_VALUE),
+                    errmsg("missing argument for geo_linestring_recv")));
+
+  npts = pq_getmsgint(buf, sizeof(int32));
+
+  base_size = npts * sizeof(struct coord2d);
+
+  size = offsetof(struct geo_linestring, coords) + base_size;
+
+  result = (struct geo_linestring*) palloc(size);
+
+  SET_VARSIZE(result, size);
+
+  result->npts = npts;
+
+  result->srid = pq_getmsgint(buf, sizeof(int32));
+
+/*
+  prevent instability in unused pad bytes!
+  the DBMS may do wrong decisions if we don't zero all fields!
+ */
+  result->dummy = 0;
+
+  for (i = 0; i < npts; i++)
+  {
+    result->coords[i].x = pq_getmsgfloat8(buf);
+    result->coords[i].y = pq_getmsgfloat8(buf);
+
+  }
+
+  PG_RETURN_GEOLINESTRING_TYPE_P(result);
+}
+
+/*
+* geo_linestring_send: Convert geo_linestring to binary representation
+*/
+PG_FUNCTION_INFO_V1(geo_linestring_send);
+
+Datum
+geo_linestring_send(PG_FUNCTION_ARGS)
+{
+  struct geo_linestring *line = PG_GETARG_GEOLINESTRING_TYPE_P(0);
+
+  StringInfoData buf;
+
+  int32 i;
+
+  /*elog(NOTICE, "geo_linestring_send called");*/
+
+ if (!PointerIsValid(line))
+   ereport(ERROR, (errcode (ERRCODE_INVALID_PARAMETER_VALUE),
+                   errmsg("missing argument for geo_linestring_send")));
+
+  pq_begintypsend(&buf);
+
+  pq_sendint(&buf, line->npts, sizeof(int32));
+  pq_sendint(&buf, line->srid, sizeof(int32));
+
+  for (i = 0; i < line->npts; i ++)
+  {
+    pq_sendfloat8(&buf, line->coords[i].x);
+    pq_sendfloat8(&buf, line->coords[i].y);
+  }
+
+  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+
+}
 
 
 /*
- * geo_point operations
+ * geo_line operations
  */
 
 PG_FUNCTION_INFO_V1(geo_linestring_from_text);

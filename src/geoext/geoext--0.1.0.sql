@@ -1,7 +1,7 @@
 --
 -- Copyright (C) 2017 National Institute For Space Research (INPE) - Brazil.
 --
--- This file is part of pg_geoext, a simple PostgreSQL extension for 
+-- This file is part of pg_geoext, a simple PostgreSQL extension for
 -- for teaching spatial database classes.
 --
 -- pg_geoext is free software: you can redistribute it and/or modify
@@ -119,15 +119,15 @@ CREATE OR REPLACE FUNCTION geo_linestring_out(geo_linestring)
     AS 'MODULE_PATHNAME', 'geo_linestring_out'
     LANGUAGE C IMMUTABLE STRICT;
 
--- CREATE OR REPLACE FUNCTION geo_linestring_recv(internal)
---     RETURNS geo_linestring
---     AS 'MODULE_PATHNAME','geo_linestring_recv'
---     LANGUAGE C IMMUTABLE STRICT;
--- 
--- CREATE OR REPLACE FUNCTION geo_linestring_send(geo_linestring)
---     RETURNS bytea
---     AS 'MODULE_PATHNAME', 'geo_linestring_send'
---     LANGUAGE C IMMUTABLE STRICT;
+CREATE OR REPLACE FUNCTION geo_linestring_recv(internal)
+    RETURNS geo_linestring
+    AS 'MODULE_PATHNAME','geo_linestring_recv'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION geo_linestring_send(geo_linestring)
+    RETURNS bytea
+    AS 'MODULE_PATHNAME', 'geo_linestring_send'
+    LANGUAGE C IMMUTABLE STRICT;
 
 
 --
