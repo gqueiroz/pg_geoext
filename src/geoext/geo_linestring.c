@@ -178,6 +178,8 @@ geo_linestring_recv(PG_FUNCTION_ARGS)
 
   int32 npts;
 
+  int32 srid;
+
   int i;
 
   int base_size;
@@ -190,6 +192,7 @@ geo_linestring_recv(PG_FUNCTION_ARGS)
     ereport(ERROR, (errcode (ERRCODE_INVALID_PARAMETER_VALUE),
                     errmsg("missing argument for geo_linestring_recv")));
 
+  srid = pq_getmsgint(buf, sizeof(int32));
   npts = pq_getmsgint(buf, sizeof(int32));
 
   base_size = npts * sizeof(struct coord2d);
@@ -200,9 +203,8 @@ geo_linestring_recv(PG_FUNCTION_ARGS)
 
   SET_VARSIZE(result, size);
 
+  result->srid = srid;
   result->npts = npts;
-
-  result->srid = pq_getmsgint(buf, sizeof(int32));
 
 /*
   prevent instability in unused pad bytes!
@@ -242,8 +244,8 @@ geo_linestring_send(PG_FUNCTION_ARGS)
 
   pq_begintypsend(&buf);
 
-  pq_sendint(&buf, line->npts, sizeof(int32));
   pq_sendint(&buf, line->srid, sizeof(int32));
+  pq_sendint(&buf, line->npts, sizeof(int32));
 
   for (i = 0; i < line->npts; i ++)
   {
