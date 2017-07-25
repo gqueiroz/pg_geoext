@@ -85,7 +85,7 @@ extern Datum geo_linestring_from_text(PG_FUNCTION_ARGS);
 extern Datum geo_linestring_to_str(PG_FUNCTION_ARGS);
 
 extern Datum geo_linestring_is_closed(PG_FUNCTION_ARGS);
-/*extern Datum geo_linestring_length(PG_FUNCTION_ARGS);*/
+extern Datum geo_linestring_length(PG_FUNCTION_ARGS);
 /*extern Datum geo_linestring_intersection_points(PG_FUNCTION_ARGS);*/
 
 
