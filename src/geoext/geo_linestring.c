@@ -336,7 +336,7 @@ geo_linestring_length(PG_FUNCTION_ARGS)
 {
   struct geo_linestring *line = PG_GETARG_GEOLINESTRING_TYPE_P(0);
 
-  /*elog(NOTICE, "geo_linestring_is_closed called");*/
+  /*elog(NOTICE, "geo_linestring_is_length called");*/
 
   float8 result = 0.0;
 
