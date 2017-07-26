@@ -1,7 +1,7 @@
 /*
   Copyright (C) 2017 National Institute For Space Research (INPE) - Brazil.
 
-  This file is part of pg_geoext, a simple PostgreSQL extension for 
+  This file is part of pg_geoext, a simple PostgreSQL extension for
   for teaching spatial database classes.
 
   pg_geoext is free software: you can redistribute it and/or modify

@@ -1,7 +1,7 @@
 /*
   Copyright (C) 2017 National Institute For Space Research (INPE) - Brazil.
 
-  This file is part of pg_geoext, a simple PostgreSQL extension for 
+  This file is part of pg_geoext, a simple PostgreSQL extension for
   for teaching spatial database classes.
 
   pg_geoext is free software: you can redistribute it and/or modify
@@ -71,7 +71,6 @@
 #define GEOEXT_GEOM_RDELIM ')'
 #define GEOEXT_GEOM_COLLECTION_DELIM ','
 
-
 /*
  * \brief Count the number of coordinates in a sequence represented as a string.
  *
@@ -93,6 +92,9 @@ int coord_count(char *s)
 
   return (ndelim + 1);
 }
+//
+
+
 
 
 /*
@@ -120,11 +122,13 @@ coord2d_decode(char *str,
   assert(type_name);
   assert(orig_string);
 
+
   coord->x = float8in_internal(str, &str, type_name, orig_string);
 
   coord->y = float8in_internal(str, &str, type_name, orig_string);
 
   *endptr = str;
+
 }
 
 
@@ -300,6 +304,8 @@ void geo_linestring_wkt_decode(char *str, struct geo_linestring* lstr)
   coord2d_sequence_decode(cp, lstr->coords, lstr->npts, &cp,
                           "geo_linestring", str);
 
+
+
 /* skip spaces, if any */
   while (*cp != '\0' && isspace((unsigned char) *cp))
     ++cp;
@@ -348,4 +354,54 @@ char* geo_linestring_wkt_encode(struct geo_linestring *line)
   appendStringInfoChar(&str, GEOEXT_GEOM_RDELIM);
 
   return str.data;
+}
+
+void geo_polystring_wkt_decode(char *str, struct geo_polygon* pstr)
+{
+/* search for the occurence of: 'POLYGON' */
+  char *cp = strcasestr(str, GEOEXT_GEOPOLYGON_WKT_TOKEN);
+
+/* if the substring 'POLYGON' is not found in the text, we have an invalid WKT */
+  if (!PointerIsValid(cp))
+    ereport(ERROR,
+            (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+            errmsg("invalid input syntax for type %s: \"%s\"",
+            "geo_polygon", str)));
+
+/* advance cp to one character past the string 'POLYGON' */
+  cp += GEOEXT_GEOPOLYGON_WKT_TOKEN_LEN;
+
+  coord2d_sequence_decode(cp, pstr->coords, pstr->npts, &cp,
+     "geo_polygon", str);
+
+/* verify if the points touched*/
+  if (pstr->coords->x != pstr->coords[pstr->npts-1].x
+            || pstr->coords->y !=  pstr->coords[pstr->npts-1].y)
+    ereport(ERROR,
+          (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+          errmsg("The first point (x = %lf and y = %lf) is not\
+ touched by last point (x = %lf and y = %lf).\
+ The points must be identicals",pstr->coords->x,
+                                       pstr->coords[pstr->npts-1].x,
+                                       pstr->coords->y,
+                                       pstr->coords[pstr->npts-1].y)));
+
+
+/* skip spaces, if any */
+  while (*cp != '\0' && isspace((unsigned char) *cp))
+    ++cp;
+
+/* if we still have characters, the WKT is invalid */
+  if(*cp != '\0')
+    ereport(ERROR,
+            (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+            errmsg("invalid input syntax for type %s: \"%s\"",
+            "geo_linestring", str)));
+/*
+  WKT doesn't have provision for SRID.
+  So, let's prevent instability in unused padded-bytes.
+  The DBMS may do wrong decisions if we don't zero all fields!
+ */
+  pstr->srid = 0;
+  pstr->dummy = 0;
 }

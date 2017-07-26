@@ -64,7 +64,7 @@ CREATE OR REPLACE FUNCTION geo_point_send(geo_point)
 --
 -- Point Operators
 --
-CREATE OR REPLACE FUNCTION point_from_text(cstring)
+CREATE OR REPLACE FUNCTION point_from_text(cstring, integer)
     RETURNS geo_point
     AS 'MODULE_PATHNAME', 'geo_point_from_text'
     LANGUAGE C IMMUTABLE STRICT;
@@ -78,7 +78,6 @@ CREATE OR REPLACE FUNCTION distance(geo_point, geo_point)
     RETURNS float8
     AS 'MODULE_PATHNAME', 'geo_point_distance'
     LANGUAGE C IMMUTABLE STRICT;
-
 
 --
 -- Register the geo_point Data Type
@@ -167,3 +166,56 @@ CREATE TYPE geo_linestring
     storage = extended,
     alignment = double
 );
+
+
+---------------------------------------------
+---------------------------------------------
+-- Introduces the geo_polygon Data Type --
+---------------------------------------------
+---------------------------------------------
+
+--
+-- Drop geo_polygon type if it exists and forward its declaration
+--
+DROP TYPE IF EXISTS geo_polygon;
+CREATE TYPE geo_polygon;
+
+--
+-- Polygon Input/Output Functions
+--
+CREATE OR REPLACE FUNCTION geo_polygon_in(cstring)
+    RETURNS geo_polygon
+    AS 'MODULE_PATHNAME', 'geo_polygon_in'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION geo_polygon_out(geo_polygon)
+    RETURNS cstring
+    AS 'MODULE_PATHNAME', 'geo_polygon_out'
+    LANGUAGE C IMMUTABLE STRICT;
+
+---
+--- Polygon Operators
+---
+
+CREATE OR REPLACE FUNCTION polygon_from_text(cstring)
+    RETURNS geo_polygon
+    AS 'MODULE_PATHNAME', 'geo_polygon_from_text'
+    LANGUAGE C IMMUTABLE STRICT;
+
+
+--
+-- Register the geo_linestring Data Type
+--
+CREATE TYPE geo_polygon
+(
+    input = geo_polygon_in,
+    output = geo_polygon_out,
+--    receive = geo_linestring_recv,
+--    send = geo_linestring_send,
+    internallength = variable,
+    storage = extended,
+    alignment = double
+);
+
+
+
