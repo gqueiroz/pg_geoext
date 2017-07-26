@@ -1,7 +1,7 @@
 --
 -- Copyright (C) 2017 National Institute For Space Research (INPE) - Brazil.
 --
--- This file is part of pg_geoext, a simple PostgreSQL extension for 
+-- This file is part of pg_geoext, a simple PostgreSQL extension for
 -- for teaching spatial database classes.
 --
 -- pg_geoext is free software: you can redistribute it and/or modify
@@ -119,15 +119,15 @@ CREATE OR REPLACE FUNCTION geo_linestring_out(geo_linestring)
     AS 'MODULE_PATHNAME', 'geo_linestring_out'
     LANGUAGE C IMMUTABLE STRICT;
 
--- CREATE OR REPLACE FUNCTION geo_linestring_recv(internal)
---     RETURNS geo_linestring
---     AS 'MODULE_PATHNAME','geo_linestring_recv'
---     LANGUAGE C IMMUTABLE STRICT;
--- 
--- CREATE OR REPLACE FUNCTION geo_linestring_send(geo_linestring)
---     RETURNS bytea
---     AS 'MODULE_PATHNAME', 'geo_linestring_send'
---     LANGUAGE C IMMUTABLE STRICT;
+CREATE OR REPLACE FUNCTION geo_linestring_recv(internal)
+    RETURNS geo_linestring
+    AS 'MODULE_PATHNAME','geo_linestring_recv'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION geo_linestring_send(geo_linestring)
+    RETURNS bytea
+    AS 'MODULE_PATHNAME', 'geo_linestring_send'
+    LANGUAGE C IMMUTABLE STRICT;
 
 
 --
@@ -143,15 +143,15 @@ CREATE OR REPLACE FUNCTION to_str(geo_linestring)
     AS 'MODULE_PATHNAME', 'geo_linestring_to_str'
     LANGUAGE C IMMUTABLE STRICT;
 
--- CREATE OR REPLACE FUNCTION is_closed(geo_linestring)
---     RETURNS boolean
---     AS 'MODULE_PATHNAME', 'geo_linestring_is_closed'
---     LANGUAGE C IMMUTABLE STRICT;
+CREATE OR REPLACE FUNCTION is_closed(geo_linestring)
+   RETURNS boolean
+   AS 'MODULE_PATHNAME', 'geo_linestring_is_closed'
+   LANGUAGE C IMMUTABLE STRICT;
 
--- CREATE OR REPLACE FUNCTION length(geo_linestring)
---     RETURNS float8
---     AS 'MODULE_PATHNAME', 'geo_linestring_length'
---     LANGUAGE C IMMUTABLE STRICT;
+CREATE OR REPLACE FUNCTION length(geo_linestring)
+   RETURNS float8
+   AS 'MODULE_PATHNAME', 'geo_linestring_length'
+   LANGUAGE C IMMUTABLE STRICT;
 
 
 --
@@ -161,8 +161,8 @@ CREATE TYPE geo_linestring
 (
     input = geo_linestring_in,
     output = geo_linestring_out,
---    receive = geo_linestring_recv,
---    send = geo_linestring_send,
+    receive = geo_linestring_recv,
+    send = geo_linestring_send,
     internallength = variable,
     storage = extended,
     alignment = double
