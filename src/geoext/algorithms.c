@@ -1,7 +1,7 @@
 /*
   Copyright (C) 2017 National Institute For Space Research (INPE) - Brazil.
 
-  This file is part of pg_geoext, a simple PostgreSQL extension for 
+  This file is part of pg_geoext, a simple PostgreSQL extension for
   for teaching spatial database classes.
 
   pg_geoext is free software: you can redistribute it and/or modify
@@ -79,13 +79,13 @@ int point_in_polygon(struct coord2d *pt,
 
 /* get test bit for above/below X axis for first vertex */
   vtx0 = poly;
-  
+
   yflag0 = ( vtx0->y >= pt->y );
 
   for( int i = 1 ; i != num_vertices ; ++i)
   {
     vtx1 = poly + i;
-    
+
     yflag1 = ( vtx1->y >= pt->y );
 
 /* check if endpoints straddle (are on opposite sides) of X axis
@@ -118,7 +118,20 @@ int point_in_polygon(struct coord2d *pt,
     yflag0 = yflag1;
     vtx0 = vtx1;
   }
-  
+
   return inside_flag;
 }
 
+double area(struct coord2d *coord, int npts)
+{
+  double area = 0;         // Accumulates area in the loop
+  int j = npts-1;  // The last vertex is the 'previous' one to the first
+
+  for (int i = 0; i < npts; i++)
+    {
+      area = area + (coord[j].x + coord[i].x) *
+                    (coord[j].y - coord[i].y);
+      j = i;  //j is previous vertex to i
+    }
+  return area/2;
+}

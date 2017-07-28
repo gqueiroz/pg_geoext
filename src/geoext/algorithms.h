@@ -1,7 +1,7 @@
 /*
   Copyright (C) 2017 National Institute For Space Research (INPE) - Brazil.
 
-  This file is part of pg_geoext, a simple PostgreSQL extension for 
+  This file is part of pg_geoext, a simple PostgreSQL extension for
   for teaching spatial database classes.
 
   pg_geoext is free software: you can redistribute it and/or modify
@@ -54,7 +54,7 @@ int equals(struct coord2d* c1, struct coord2d* c2);
 
 /*
  * \brief Computes the euclidean distance between two points.
- * 
+ *
  * \note This function is based on the naive formula: \f$\sqrt{(x_2-x_1)^2+(y_2-y_1)^2}\f$.
  *
  */
@@ -78,5 +78,6 @@ int point_in_polygon(struct coord2d* pt,
                      struct coord2d* poly,
                      int num_vertices);
 
+double area(struct coord2d *coord, int npts);
 
 #endif  /* __GEOEXT_ALGORITHMS_H__ */

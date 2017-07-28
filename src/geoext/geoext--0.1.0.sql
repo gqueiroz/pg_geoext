@@ -64,7 +64,7 @@ CREATE OR REPLACE FUNCTION geo_point_send(geo_point)
 --
 -- Point Operators
 --
-CREATE OR REPLACE FUNCTION point_from_text(cstring, integer)
+CREATE OR REPLACE FUNCTION point_from_text(cstring)
     RETURNS geo_point
     AS 'MODULE_PATHNAME', 'geo_point_from_text'
     LANGUAGE C IMMUTABLE STRICT;
@@ -202,6 +202,20 @@ CREATE OR REPLACE FUNCTION polygon_from_text(cstring)
     AS 'MODULE_PATHNAME', 'geo_polygon_from_text'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE OR REPLACE FUNCTION to_str(geo_polygon)
+    RETURNS cstring
+    AS 'MODULE_PATHNAME', 'geo_polygon_to_str'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION polygon_contains_point(geo_polygon, geo_point)
+    RETURNS cstring
+    AS 'MODULE_PATHNAME', 'geo_polygon_contains_point'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION polygon_area(geo_polygon)
+    RETURNS float8
+    AS 'MODULE_PATHNAME', 'geo_polygon_area'
+    LANGUAGE C IMMUTABLE STRICT;
 
 --
 -- Register the geo_linestring Data Type

@@ -82,13 +82,13 @@ extern Datum geo_polygon_recv(PG_FUNCTION_ARGS);
 extern Datum geo_polygon_send(PG_FUNCTION_ARGS);
 */
 extern Datum geo_polygon_from_text(PG_FUNCTION_ARGS);
-/*
 extern Datum geo_polygon_to_str(PG_FUNCTION_ARGS);
-
 extern Datum geo_polygon_area(PG_FUNCTION_ARGS);
+/*
 extern Datum geo_polygon_perimeter(PG_FUNCTION_ARGS);
-extern Datum geo_polygon_contains_point(PG_FUNCTION_ARGS);
 */
+extern Datum geo_polygon_contains_point(PG_FUNCTION_ARGS);
+
 
 
 #endif  /* __GEOEXT_GEO_POLYGON_H__ */

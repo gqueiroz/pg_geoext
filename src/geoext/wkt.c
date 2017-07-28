@@ -352,11 +352,11 @@ char* geo_linestring_wkt_encode(struct geo_linestring *line)
   }
 
   appendStringInfoChar(&str, GEOEXT_GEOM_RDELIM);
-
+  elog(NOTICE, "%s",str.data);
   return str.data;
 }
 
-void geo_polystring_wkt_decode(char *str, struct geo_polygon* pstr)
+void geo_polygon_wkt_decode(char *str, struct geo_polygon* pstr)
 {
 /* search for the occurence of: 'POLYGON' */
   char *cp = strcasestr(str, GEOEXT_GEOPOLYGON_WKT_TOKEN);
@@ -404,4 +404,34 @@ void geo_polystring_wkt_decode(char *str, struct geo_polygon* pstr)
  */
   pstr->srid = 0;
   pstr->dummy = 0;
+}
+
+
+char* geo_polygon_wkt_encode(struct geo_polygon *poly)
+{
+  StringInfoData str;
+
+  initStringInfo(&str);
+
+  appendStringInfoString(&str, GEOEXT_GEOPOLYGON_WKT_TOKEN);
+
+  appendStringInfoChar(&str, GEOEXT_GEOM_LDELIM);
+
+  for(int i = 0; i < poly->npts; ++i)
+  {
+    if(i != 0)
+      appendStringInfoString(&str, ", ");
+
+    char *xstr = float8out_internal(poly->coords[i].x);
+    char *ystr = float8out_internal(poly->coords[i].y);
+
+    appendStringInfo(&str, "%s %s", xstr, ystr);
+
+    pfree(xstr);
+    pfree(ystr);
+  }
+
+  appendStringInfoChar(&str, GEOEXT_GEOM_RDELIM);
+
+  return str.data;
 }

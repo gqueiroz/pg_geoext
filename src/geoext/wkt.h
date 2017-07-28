@@ -105,7 +105,8 @@ char* geo_linestring_wkt_encode(struct geo_linestring *line);
  */
 /*void geo_polygon_wkt_decode(char *str, struct geo_polygon* poly);*/
 
-void geo_polystring_wkt_decode(char *str, struct geo_polygon* pstr);
+void geo_polygon_wkt_decode(char *str, struct geo_polygon* pstr);
 
+char* geo_polygon_wkt_encode(struct geo_polygon *poly);
 
 #endif  /* __GEOEXT_WKT_H__ */

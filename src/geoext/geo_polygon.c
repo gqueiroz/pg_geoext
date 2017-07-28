@@ -36,6 +36,7 @@
 
 /* GeoExtension */
 #include "geo_polygon.h"
+#include "geo_point.h"
 #include "algorithms.h"
 #include "hexutils.h"
 #include "wkt.h"
@@ -86,7 +87,7 @@ geo_polygon_from_text(PG_FUNCTION_ARGS){
 
   poly->npts = npts;
 
-  geo_polystring_wkt_decode(str, poly);
+  geo_polygon_wkt_decode(str, poly);
 
   PG_RETURN_GEOPOLYGON_TYPE_P(poly);
 // /elog(NOTICE, "teste 1");
@@ -182,4 +183,41 @@ geo_polygon_out(PG_FUNCTION_ARGS)
   binary2hex((char*)poly->coords, poly->npts * sizeof(struct geo_polygon), cp);
 
   PG_RETURN_CSTRING(hstr);
+}
+
+PG_FUNCTION_INFO_V1(geo_polygon_to_str);
+
+Datum
+geo_polygon_to_str(PG_FUNCTION_ARGS){
+
+  struct geo_polygon *poly = PG_GETARG_GEOPOLYGON_TYPE_P(0);
+
+  PG_RETURN_CSTRING(geo_polygon_wkt_encode(poly));
+
+}
+
+PG_FUNCTION_INFO_V1(geo_polygon_contains_point);
+
+Datum
+geo_polygon_contains_point(PG_FUNCTION_ARGS){
+
+  struct geo_polygon *poly = PG_GETARG_GEOPOLYGON_TYPE_P(0);
+  struct geo_point *point = PG_GETARG_GEOPOINT_TYPE_P(1);
+
+  int boolean = point_in_polygon(&point->coord, &poly->coords, poly->npts);
+
+  if (boolean == 1)
+    PG_RETURN_CSTRING("TRUE");
+  PG_RETURN_CSTRING("FALSE");
+}
+
+PG_FUNCTION_INFO_V1(geo_polygon_area);
+
+Datum
+geo_polygon_area(PG_FUNCTION_ARGS){
+
+  struct geo_polygon *poly = PG_GETARG_GEOPOLYGON_TYPE_P(0);
+  float8 result = area(&poly->coords, poly->npts);
+
+  PG_RETURN_FLOAT8(result);
 }

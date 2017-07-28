@@ -185,8 +185,7 @@ Datum
 geo_point_from_text(PG_FUNCTION_ARGS)
 {
   char *str = PG_GETARG_CSTRING(0);
-    int32 str2 = PG_GETARG_INT32(1);
-elog(NOTICE, "Testando o valor: %d", str2);
+
   struct geo_point *pt = (struct geo_point*) palloc(sizeof(struct geo_point));
 
   /*elog(NOTICE, "geo_point_from_text called for: %s", str);*/
