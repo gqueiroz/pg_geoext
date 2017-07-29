@@ -176,15 +176,13 @@ geo_linestring_recv(PG_FUNCTION_ARGS)
 
   struct geo_linestring *result = NULL;
 
-  int32 npts;
+  int32 npts = 0;
 
-  int32 srid;
+  int32 srid = 0;
 
-  int i;
+  int base_size = 0;
 
-  int base_size;
-
-  int size;
+  int size = 0;
 
   /*elog(NOTICE, "geo_linestring_recv called");*/
 
@@ -212,7 +210,7 @@ geo_linestring_recv(PG_FUNCTION_ARGS)
  */
   result->dummy = 0;
 
-  for (i = 0; i < npts; i++)
+  for (int i = 0; i < npts; ++i)
   {
     result->coords[i].x = pq_getmsgfloat8(buf);
     result->coords[i].y = pq_getmsgfloat8(buf);
@@ -234,8 +232,6 @@ geo_linestring_send(PG_FUNCTION_ARGS)
 
   StringInfoData buf;
 
-  int32 i;
-
   /*elog(NOTICE, "geo_linestring_send called");*/
 
  if (!PointerIsValid(line))
@@ -247,7 +243,7 @@ geo_linestring_send(PG_FUNCTION_ARGS)
   pq_sendint(&buf, line->srid, sizeof(int32));
   pq_sendint(&buf, line->npts, sizeof(int32));
 
-  for (i = 0; i < line->npts; i ++)
+  for (int i = 0; i < line->npts; ++i)
   {
     pq_sendfloat8(&buf, line->coords[i].x);
     pq_sendfloat8(&buf, line->coords[i].y);

@@ -92,7 +92,6 @@ geo_point_in(PG_FUNCTION_ARGS)
   prevent instability in unused pad bytes!
   the DBMS may do wrong decisions if we don't zero all fields!
  */
-  pt->srid = 0;
   pt->dummy = 0;
 
   PG_RETURN_GEOPOINT_TYPE_P(pt);
