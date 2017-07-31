@@ -1,7 +1,7 @@
 /*
   Copyright (C) 2017 National Institute For Space Research (INPE) - Brazil.
 
-  This file is part of pg_geoext, a simple PostgreSQL extension for 
+  This file is part of pg_geoext, a simple PostgreSQL extension for
   for teaching spatial database classes.
 
   pg_geoext is free software: you can redistribute it and/or modify
@@ -75,19 +75,16 @@ struct geo_polygon
  * geo_polygon operations.
  *
  */
-/*extern Datum geo_polygon_in(PG_FUNCTION_ARGS);
+extern Datum geo_polygon_in(PG_FUNCTION_ARGS);
 extern Datum geo_polygon_out(PG_FUNCTION_ARGS);
-
 extern Datum geo_polygon_recv(PG_FUNCTION_ARGS);
-extern Datum geo_polygon_send(PG_FUNCTION_ARGS);
-
+//extern Datum geo_polygon_send(PG_FUNCTION_ARGS);
 extern Datum geo_polygon_from_text(PG_FUNCTION_ARGS);
 extern Datum geo_polygon_to_str(PG_FUNCTION_ARGS);
-
 extern Datum geo_polygon_area(PG_FUNCTION_ARGS);
 extern Datum geo_polygon_perimeter(PG_FUNCTION_ARGS);
 extern Datum geo_polygon_contains_point(PG_FUNCTION_ARGS);
-*/
+
 
 
 #endif  /* __GEOEXT_GEO_POLYGON_H__ */

@@ -1,7 +1,7 @@
 /*
   Copyright (C) 2017 National Institute For Space Research (INPE) - Brazil.
 
-  This file is part of pg_geoext, a simple PostgreSQL extension for 
+  This file is part of pg_geoext, a simple PostgreSQL extension for
   for teaching spatial database classes.
 
   pg_geoext is free software: you can redistribute it and/or modify
@@ -105,5 +105,8 @@ char* geo_linestring_wkt_encode(struct geo_linestring *line);
  */
 /*void geo_polygon_wkt_decode(char *str, struct geo_polygon* poly);*/
 
+void geo_polygon_wkt_decode(char *str, struct geo_polygon* pstr);
+
+char* geo_polygon_wkt_encode(struct geo_polygon *poly);
 
 #endif  /* __GEOEXT_WKT_H__ */

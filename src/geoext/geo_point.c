@@ -1,7 +1,7 @@
 /*
   Copyright (C) 2017 National Institute For Space Research (INPE) - Brazil.
 
-  This file is part of pg_geoext, a simple PostgreSQL extension for 
+  This file is part of pg_geoext, a simple PostgreSQL extension for
   for teaching spatial database classes.
 
   pg_geoext is free software: you can redistribute it and/or modify
@@ -106,7 +106,7 @@ geo_point_out(PG_FUNCTION_ARGS)
   struct geo_point *pt = PG_GETARG_GEOPOINT_TYPE_P(0);
 
 /* alloc a buffer for hex-string plus a trailing '\0' */
-  char *hstr = palloc(GEOEXT_GEOPOINT_HEX_LEN + 1); 
+  char *hstr = palloc(GEOEXT_GEOPOINT_HEX_LEN + 1);
 
   /*elog(NOTICE, "geo_point_out called");*/
 
