@@ -217,6 +217,11 @@ CREATE OR REPLACE FUNCTION polygon_area(geo_polygon)
     AS 'MODULE_PATHNAME', 'geo_polygon_area'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE OR REPLACE FUNCTION polygon_perimeter(geo_polygon)
+    RETURNS float8
+    AS 'MODULE_PATHNAME', 'geo_polygon_perimeter'
+    LANGUAGE C IMMUTABLE STRICT;
+
 --
 -- Register the geo_linestring Data Type
 --

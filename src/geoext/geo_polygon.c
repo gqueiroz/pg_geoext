@@ -221,3 +221,12 @@ geo_polygon_area(PG_FUNCTION_ARGS){
 
   PG_RETURN_FLOAT8(result);
 }
+
+PG_FUNCTION_INFO_V1(geo_polygon_perimeter);
+
+Datum
+geo_polygon_perimeter(PG_FUNCTION_ARGS){
+
+  struct geo_polygon *poly = PG_GETARG_GEOPOLYGON_TYPE_P(0);
+  PG_RETURN_FLOAT8(perimeter(&poly->coords, poly->npts));
+}

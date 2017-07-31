@@ -36,7 +36,6 @@
 /* GeoExt */
 #include "algorithms.h"
 
-
 /* C Standard Library */
 #include <assert.h>
 #include <ctype.h>
@@ -134,4 +133,17 @@ double area(struct coord2d *coord, int npts)
       j = i;  //j is previous vertex to i
     }
   return area/2;
+}
+
+double perimeter (struct coord2d *coord, int npts){
+
+  double d = 0;
+  int auxNpts = npts-1;
+
+  for (int i = 0; i < auxNpts; ++i){
+
+    d = d + (sqrt((pow((coord[i+1].x - coord[i].x), 2)) +
+              (pow((coord[i+1].y - coord[i].y), 2))));
+  }
+  return d;
 }

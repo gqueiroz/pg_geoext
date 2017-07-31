@@ -15,11 +15,12 @@
 
 int main (){
 
+ double d;
 
-  char *s = "44 44, 44 44, 44 44, 44 44)";
-  s = strchr(s, ',');
+ d = d + (sqrt((pow((55 - 44), 2)) +
+           (pow((55 - 44), 2))));
 
-  printf("%s",s);
+  printf("%f",d);
 
   // printf("%s",str);
   // char *cp = (char*)strcasestr("POINT(44 44)", "POINT");
