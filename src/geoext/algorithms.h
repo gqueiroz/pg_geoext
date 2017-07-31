@@ -62,6 +62,13 @@ double euclidian_distance(struct coord2d* c1, struct coord2d* c2);
 
 
 /*
+ * \brief Computes the length of points.
+ *
+ */
+double length(struct coord2d* c1, int num_vertices);
+
+
+/*
  * \brief Tells if a point is inside a polygon.
  *
  * This algorithm is based on crossings test.

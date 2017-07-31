@@ -60,20 +60,6 @@ double euclidian_distance(struct coord2d *c1, struct coord2d *c2)
   return result;
 }
 
-double length(struct coord2d *c, int num_vertices)
-{
-  double result = 0.0;
-
-  for(int i = 0; i < (num_vertices - 1); i++)
-  {
-    result += euclidian_distance(&c[i], &c[i+1]);
-
-  }
-
-  return result;
-
-}
-
 
 int point_in_polygon(struct coord2d *pt,
                      struct coord2d *poly,
@@ -136,29 +122,3 @@ int point_in_polygon(struct coord2d *pt,
   return inside_flag;
 }
 
-double area(struct coord2d *coord, int npts)
-{
-  double area = 0;         // Accumulates area in the loop
-  int j = npts-1;  // The last vertex is the 'previous' one to the first
-
-  for (int i = 0; i < npts; i++)
-    {
-      area = area + (coord[j].x + coord[i].x) *
-                    (coord[j].y - coord[i].y);
-      j = i;  //j is previous vertex to i
-    }
-  return area/2;
-}
-
-double perimeter (struct coord2d *coord, int npts){
-
-  double d = 0;
-  int auxNpts = npts-1;
-
-  for (int i = 0; i < auxNpts; ++i){
-
-    d = d + (sqrt((pow((coord[i+1].x - coord[i].x), 2)) +
-              (pow((coord[i+1].y - coord[i].y), 2))));
-  }
-  return d;
-}
