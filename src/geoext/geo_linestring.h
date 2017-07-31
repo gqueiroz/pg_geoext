@@ -43,7 +43,6 @@
 /* GeoExt */
 #include "decls.h"
 
-
 /*
  * A geo_linestring represents a simple polygon line in 2D-space.
  *
