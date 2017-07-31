@@ -230,3 +230,50 @@ geo_polygon_perimeter(PG_FUNCTION_ARGS){
   struct geo_polygon *poly = PG_GETARG_GEOPOLYGON_TYPE_P(0);
   PG_RETURN_FLOAT8(perimeter(&poly->coords, poly->npts));
 }
+
+
+PG_FUNCTION_INFO_V1(geo_polygon_recv);
+
+Datum
+geo_polygon_recv(PG_FUNCTION_ARGS)
+{
+  StringInfo  buf = (StringInfo) PG_GETARG_POINTER(0);
+
+  if (!PointerIsValid(buf))
+    ereport(ERROR, (errcode (ERRCODE_INVALID_PARAMETER_VALUE),
+                    errmsg("missing argument for geo_linestring_recv")));
+
+
+  struct geo_polygon *poly = NULL;
+
+  int32 npts = 0;
+
+  int32 srid = 0;
+
+  int base_size = 0;
+
+  int size = 0;
+
+  srid = pq_getmsgint(buf, sizeof(int32));
+  npts = pq_getmsgint(buf, sizeof(int32));
+
+  base_size = npts * sizeof(struct coord2d);
+  size = offsetof(struct geo_polygon, coords) + base_size;
+
+  result = (struct geo_polygon*) palloc(size);
+
+  SET_VARSIZE(result, size);
+
+  result->srid = srid;
+  result->npts = npts;
+  result->dummy = 0;
+
+  for (int i = 0; i < npts; ++i)
+  {
+    result->coords[i].x = pq_getmsgfloat8(buf);
+    result->coords[i].y = pq_getmsgfloat8(buf);
+
+  }
+
+  PG_RETURN_GEOPOLYGON_TYPE_P(result);
+}

@@ -310,6 +310,12 @@ CREATE OR REPLACE FUNCTION geo_polygon_out(geo_polygon)
     AS 'MODULE_PATHNAME', 'geo_polygon_out'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE OR REPLACE FUNCTION polygon_recv(internal)
+    RETURNS geo_polygon
+    AS 'MODULE_PATHNAME','geo_polygon_recv'
+    LANGUAGE C IMMUTABLE STRICT;
+
+
 ---
 --- Polygon Operators
 ---
@@ -346,7 +352,7 @@ CREATE TYPE geo_polygon
 (
     input = geo_polygon_in,
     output = geo_polygon_out,
---    receive = geo_linestring_recv,
+    receive = geo_polygon_recv,
 --    send = geo_linestring_send,
     internallength = variable,
     storage = extended,
