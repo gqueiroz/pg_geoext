@@ -277,3 +277,29 @@ geo_polygon_recv(PG_FUNCTION_ARGS)
 
   PG_RETURN_GEOPOLYGON_TYPE_P(poly);
 }
+
+Datum
+geo_polygon_send(PG_FUNCTION_ARGS){
+
+  struct geo_polygon *poly = PG_GETARG_GEOPOLYGON_TYPE_P(0);
+
+  StringInfoData buf;
+
+  if (!PointerIsValid(poly))
+    ereport(ERROR, (errcode (ERRCODE_INVALID_PARAMETER_VALUE),
+                    errmsg("missing argument for geo_linestring_send")));
+
+
+  pq_begintypsend(&buf);
+
+  pq_sendint(&buf, poly->srid, sizeof(int32));
+  pq_sendint(&buf, poly->npts, sizeof(int32));
+
+  for (int i = 0; i < poly->npts; ++i)
+  {
+    pq_sendfloat8(&buf, poly->coords[i].x);
+    pq_sendfloat8(&buf, poly->coords[i].y);
+  }
+
+  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+}
