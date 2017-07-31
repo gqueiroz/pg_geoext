@@ -345,6 +345,11 @@ CREATE OR REPLACE FUNCTION polygon_perimeter(geo_polygon)
     AS 'MODULE_PATHNAME', 'geo_polygon_perimeter'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE OR REPLACE FUNCTION polygon_send(geo_polygon)
+    RETURNS bytea
+    AS 'MODULE_PATHNAME', 'geo_polygon_send'
+    LANGUAGE C IMMUTABLE STRICT;
+
 --
 -- Register the geo_linestring Data Type
 --

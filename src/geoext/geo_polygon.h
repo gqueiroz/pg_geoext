@@ -78,7 +78,7 @@ struct geo_polygon
 extern Datum geo_polygon_in(PG_FUNCTION_ARGS);
 extern Datum geo_polygon_out(PG_FUNCTION_ARGS);
 extern Datum geo_polygon_recv(PG_FUNCTION_ARGS);
-//extern Datum geo_polygon_send(PG_FUNCTION_ARGS);
+extern Datum geo_polygon_send(PG_FUNCTION_ARGS);
 extern Datum geo_polygon_from_text(PG_FUNCTION_ARGS);
 extern Datum geo_polygon_to_str(PG_FUNCTION_ARGS);
 extern Datum geo_polygon_area(PG_FUNCTION_ARGS);

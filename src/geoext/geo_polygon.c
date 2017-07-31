@@ -260,20 +260,20 @@ geo_polygon_recv(PG_FUNCTION_ARGS)
   base_size = npts * sizeof(struct coord2d);
   size = offsetof(struct geo_polygon, coords) + base_size;
 
-  result = (struct geo_polygon*) palloc(size);
+  poly = (struct geo_polygon*) palloc(size);
 
-  SET_VARSIZE(result, size);
+  SET_VARSIZE(poly, size);
 
-  result->srid = srid;
-  result->npts = npts;
-  result->dummy = 0;
+  poly->srid = srid;
+  poly->npts = npts;
+  poly->dummy = 0;
 
   for (int i = 0; i < npts; ++i)
   {
-    result->coords[i].x = pq_getmsgfloat8(buf);
-    result->coords[i].y = pq_getmsgfloat8(buf);
+    poly->coords[i].x = pq_getmsgfloat8(buf);
+    poly->coords[i].y = pq_getmsgfloat8(buf);
 
   }
 
-  PG_RETURN_GEOPOLYGON_TYPE_P(result);
+  PG_RETURN_GEOPOLYGON_TYPE_P(poly);
 }
