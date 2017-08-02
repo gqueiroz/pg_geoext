@@ -63,8 +63,10 @@ double euclidian_distance(struct coord2d *c1, struct coord2d *c2)
 double length(struct coord2d *c, int num_vertices)
 {
   double result = 0.0;
+    
+  const int n = num_vertices - 1;
 
-  for(int i = 0; i < (num_vertices - 1); i++)
+  for(int i = 0; i < n; ++i)
   {
     result += euclidian_distance(&c[i], &c[i+1]);
 
