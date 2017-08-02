@@ -79,7 +79,6 @@ CREATE OR REPLACE FUNCTION distance(geo_point, geo_point)
     AS 'MODULE_PATHNAME', 'geo_point_distance'
     LANGUAGE C IMMUTABLE STRICT;
 
-
 --
 -- Point Operators to interface to B-tree
 --
@@ -290,3 +289,82 @@ CREATE TYPE geo_linestring
     storage = extended,
     alignment = double
 );
+
+
+---------------------------------------------
+---------------------------------------------
+-- Introduces the geo_polygon Data Type --
+---------------------------------------------
+---------------------------------------------
+
+--
+-- Drop geo_polygon type if it exists and forward its declaration
+--
+DROP TYPE IF EXISTS geo_polygon;
+CREATE TYPE geo_polygon;
+
+--
+-- Polygon Input/Output Functions
+--
+CREATE OR REPLACE FUNCTION geo_polygon_in(cstring)
+    RETURNS geo_polygon
+    AS 'MODULE_PATHNAME', 'geo_polygon_in'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION geo_polygon_out(geo_polygon)
+    RETURNS cstring
+    AS 'MODULE_PATHNAME', 'geo_polygon_out'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION polygon_recv(internal)
+    RETURNS geo_polygon
+    AS 'MODULE_PATHNAME','geo_polygon_recv'
+    LANGUAGE C IMMUTABLE STRICT;
+
+
+---
+--- Polygon Operators
+---
+
+CREATE OR REPLACE FUNCTION polygon_from_text(cstring)
+    RETURNS geo_polygon
+    AS 'MODULE_PATHNAME', 'geo_polygon_from_text'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION to_str(geo_polygon)
+    RETURNS cstring
+    AS 'MODULE_PATHNAME', 'geo_polygon_to_str'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION polygon_contains_point(geo_polygon, geo_point)
+    RETURNS cstring
+    AS 'MODULE_PATHNAME', 'geo_polygon_contains_point'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION polygon_area(geo_polygon)
+    RETURNS float8
+    AS 'MODULE_PATHNAME', 'geo_polygon_area'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION polygon_perimeter(geo_polygon)
+    RETURNS float8
+    AS 'MODULE_PATHNAME', 'geo_polygon_perimeter'
+    LANGUAGE C IMMUTABLE STRICT;
+
+--PG_FUNCTION_INFO_V1(geo_polygon_send);
+
+-- Register the geo_linestring Data Type
+--
+CREATE TYPE geo_polygon
+(
+    input = geo_polygon_in,
+    output = geo_polygon_out,
+    receive = geo_polygon_recv,
+--    send = geo_linestring_send,
+    internallength = variable,
+    storage = extended,
+    alignment = double
+);
+
+
+
