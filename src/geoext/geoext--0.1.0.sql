@@ -364,5 +364,3 @@ CREATE TYPE geo_polygon
     alignment = double
 );
 
-
-

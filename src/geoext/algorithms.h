@@ -85,7 +85,12 @@ int point_in_polygon(struct coord2d* pt,
                      struct coord2d* poly,
                      int num_vertices);
 
+
+/*
+* \brief Computes the area of polygon.
+*
+*/
 double area(struct coord2d *coord, int npts);
-double perimeter (struct coord2d *coord, int npts);
+
 
 #endif  /* __GEOEXT_ALGORITHMS_H__ */

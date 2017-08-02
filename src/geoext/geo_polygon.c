@@ -56,43 +56,23 @@
 #include <string.h>
 
 /*
-  An Hex-String encoding a Polygon must have at least:
-  - srid: sizeof(int32)
-  - npts: sizeof(int32)
-  - 2 coordinates: 2 * sizeof(struct coord2d)
-  Note that int hex we will have the double of bytes!
+ * Utility macros.
  */
+
+ /*
+   An Hex-String encoding a Polygon must have at least:
+   - srid: sizeof(int32)
+   - npts: sizeof(int32)
+   - 2 coordinates: 2 * sizeof(struct coord2d)
+   Note that int hex we will have the double of bytes!
+  */
 #define GEOEXT_MIN_GEOPOLYGONSTRING_HEX_LEN \
 (2 * ((2 * sizeof(int32)) + (2 * sizeof(struct coord2d))))
 
-PG_FUNCTION_INFO_V1(geo_polygon_from_text);
 
-Datum
-geo_polygon_from_text(PG_FUNCTION_ARGS){
-
-  char *str = PG_GETARG_CSTRING(0);
-  int npts = coord_count(str);
-  struct geo_polygon *poly = NULL;
-  int base_size = npts * sizeof(struct coord2d);
-  int size = offsetof(struct geo_polygon, coords) + base_size;
-
-  if(npts < 4)
-    ereport(ERROR,
-            (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-            errmsg("Polygon requires more points: minimum 4")));
-
- poly = (struct geo_polygon*) palloc(size);
-
-  SET_VARSIZE(poly, size);
-
-  poly->npts = npts;
-
-  geo_polygon_wkt_decode(str, poly);
-
-  PG_RETURN_GEOPOLYGON_TYPE_P(poly);
-// /elog(NOTICE, "teste 1");
-}
-
+/*
+ * I/O Functions for the geo_polygon data type
+ */
 
 PG_FUNCTION_INFO_V1(geo_polygon_in);
 
@@ -137,8 +117,6 @@ geo_polygon_in(PG_FUNCTION_ARGS)
 
   size = offsetof(struct geo_polygon, coords) + base_size;
 
-  /*elog(NOTICE, "number of bytes required for Polygon '%s': %d", str, size);*/
-
   poly = (struct geo_polygon*) palloc(size);
 
   SET_VARSIZE(poly, size);
@@ -171,8 +149,6 @@ geo_polygon_out(PG_FUNCTION_ARGS)
 
   char* cp = NULL;
 
-  /*elog(NOTICE, "geo_linestring_out called");*/
-
 /* encode the srid and npts */
   binary2hex((char*)(&poly->srid), 2 * sizeof(int32), hstr);
 
@@ -183,52 +159,6 @@ geo_polygon_out(PG_FUNCTION_ARGS)
   binary2hex((char*)poly->coords, poly->npts * sizeof(struct geo_polygon), cp);
 
   PG_RETURN_CSTRING(hstr);
-}
-
-PG_FUNCTION_INFO_V1(geo_polygon_to_str);
-
-Datum
-geo_polygon_to_str(PG_FUNCTION_ARGS){
-
-  struct geo_polygon *poly = PG_GETARG_GEOPOLYGON_TYPE_P(0);
-
-  PG_RETURN_CSTRING(geo_polygon_wkt_encode(poly));
-
-}
-
-PG_FUNCTION_INFO_V1(geo_polygon_contains_point);
-
-Datum
-geo_polygon_contains_point(PG_FUNCTION_ARGS){
-
-  struct geo_polygon *poly = PG_GETARG_GEOPOLYGON_TYPE_P(0);
-  struct geo_point *point = PG_GETARG_GEOPOINT_TYPE_P(1);
-
-  int boolean = point_in_polygon(&point->coord, &poly->coords, poly->npts);
-
-  if (boolean == 1)
-    PG_RETURN_CSTRING("TRUE");
-  PG_RETURN_CSTRING("FALSE");
-}
-
-PG_FUNCTION_INFO_V1(geo_polygon_area);
-
-Datum
-geo_polygon_area(PG_FUNCTION_ARGS){
-
-  struct geo_polygon *poly = PG_GETARG_GEOPOLYGON_TYPE_P(0);
-  float8 result = area(&poly->coords, poly->npts);
-
-  PG_RETURN_FLOAT8(result);
-}
-
-PG_FUNCTION_INFO_V1(geo_polygon_perimeter);
-
-Datum
-geo_polygon_perimeter(PG_FUNCTION_ARGS){
-
-  struct geo_polygon *poly = PG_GETARG_GEOPOLYGON_TYPE_P(0);
-  PG_RETURN_FLOAT8(perimeter(&poly->coords, poly->npts));
 }
 
 
@@ -302,4 +232,83 @@ geo_polygon_send(PG_FUNCTION_ARGS){
   }
 
   PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+}
+
+
+/*
+ * geo_polygon operations
+ */
+
+PG_FUNCTION_INFO_V1(geo_polygon_from_text);
+
+Datum
+geo_polygon_from_text(PG_FUNCTION_ARGS){
+
+  char *str = PG_GETARG_CSTRING(0);
+  int npts = coord_count(str);
+  struct geo_polygon *poly = NULL;
+  int base_size = npts * sizeof(struct coord2d);
+  int size = offsetof(struct geo_polygon, coords) + base_size;
+
+  if(npts < 4)
+    ereport(ERROR,
+            (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+            errmsg("Polygon requires more points: minimum 4")));
+
+ poly = (struct geo_polygon*) palloc(size);
+
+  SET_VARSIZE(poly, size);
+
+  poly->npts = npts;
+
+  geo_polygon_wkt_decode(str, poly);
+
+  PG_RETURN_GEOPOLYGON_TYPE_P(poly);
+}
+
+
+Datum
+geo_polygon_to_str(PG_FUNCTION_ARGS){
+
+  struct geo_polygon *poly = PG_GETARG_GEOPOLYGON_TYPE_P(0);
+
+  PG_RETURN_CSTRING(geo_polygon_wkt_encode(poly));
+
+}
+
+
+PG_FUNCTION_INFO_V1(geo_polygon_area);
+
+Datum
+geo_polygon_area(PG_FUNCTION_ARGS){
+
+  struct geo_polygon *poly = PG_GETARG_GEOPOLYGON_TYPE_P(0);
+  float8 result = area(&poly->coords, poly->npts);
+
+  PG_RETURN_FLOAT8(result);
+}
+
+
+PG_FUNCTION_INFO_V1(geo_polygon_perimeter);
+
+Datum
+geo_polygon_perimeter(PG_FUNCTION_ARGS){
+
+  struct geo_polygon *poly = PG_GETARG_GEOPOLYGON_TYPE_P(0);
+
+  PG_RETURN_FLOAT8(length(&poly->coords, poly->npts));
+}
+
+
+PG_FUNCTION_INFO_V1(geo_polygon_contains_point);
+
+Datum
+geo_polygon_contains_point(PG_FUNCTION_ARGS){
+
+  struct geo_polygon *poly = PG_GETARG_GEOPOLYGON_TYPE_P(0);
+  struct geo_point *point = PG_GETARG_GEOPOINT_TYPE_P(1);
+
+  int boolean = point_in_polygon(&point->coord, &poly->coords, poly->npts);
+
+  PG_RETURN_BOOL(boolean);
 }
