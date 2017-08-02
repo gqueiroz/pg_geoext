@@ -81,6 +81,45 @@ CREATE OR REPLACE FUNCTION distance(geo_point, geo_point)
 
 
 --
+-- Point Operators to interface to B-tree
+--
+CREATE OR REPLACE FUNCTION geo_point_cmp(geo_point, geo_point)
+    RETURNS int4
+    AS 'MODULE_PATHNAME', 'geo_point_cmp'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION geo_point_eq(geo_point, geo_point)
+    RETURNS boolean
+    AS 'MODULE_PATHNAME', 'geo_point_eq'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION geo_point_ne(geo_point, geo_point)
+    RETURNS boolean
+    AS 'MODULE_PATHNAME', 'geo_point_ne'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION geo_point_lt(geo_point, geo_point)
+    RETURNS boolean
+    AS 'MODULE_PATHNAME', 'geo_point_lt'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION geo_point_gt(geo_point, geo_point)
+    RETURNS boolean
+    AS 'MODULE_PATHNAME', 'geo_point_gt'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION geo_point_le(geo_point, geo_point)
+    RETURNS boolean
+    AS 'MODULE_PATHNAME', 'geo_point_le'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION geo_point_ge(geo_point, geo_point)
+    RETURNS boolean
+    AS 'MODULE_PATHNAME', 'geo_point_ge'
+    LANGUAGE C IMMUTABLE STRICT;
+
+
+--
 -- Register the geo_point Data Type
 --
 CREATE TYPE geo_point(
@@ -91,6 +130,84 @@ CREATE TYPE geo_point(
     internallength = 24,
     alignment = double
 );
+
+
+--
+-- Create operators to interface geo_point to B-tree index
+--
+CREATE OPERATOR = (
+    LEFTARG = geo_point,
+    RIGHTARG = geo_point,
+    PROCEDURE = geo_point_eq,
+    COMMUTATOR = '=',
+    NEGATOR = '<>',
+    RESTRICT = scalarltsel,
+    JOIN = scalarltjoinsel
+);
+
+CREATE OPERATOR <> (
+    LEFTARG = geo_point,
+    RIGHTARG = geo_point,
+    PROCEDURE = geo_point_ne,
+    COMMUTATOR = '<>',
+    NEGATOR = '=',
+    RESTRICT = scalarltsel,
+    JOIN = scalarltjoinsel
+);
+
+CREATE OPERATOR <
+(
+    LEFTARG = geo_point,
+    RIGHTARG = geo_point,
+    PROCEDURE = geo_point_lt,
+    COMMUTATOR = >,
+    NEGATOR = >=,
+    RESTRICT = scalarltsel,
+    JOIN = scalarltjoinsel
+);
+
+CREATE OPERATOR > (
+    LEFTARG = geo_point,
+    RIGHTARG = geo_point,
+    PROCEDURE = geo_point_gt,
+    COMMUTATOR = < ,
+    NEGATOR = <=,
+    RESTRICT = scalarltsel,
+    JOIN = scalarltjoinsel
+);
+
+CREATE OPERATOR <= (
+    LEFTARG = geo_point,
+    RIGHTARG = geo_point,
+    PROCEDURE = geo_point_le,
+    COMMUTATOR = >= ,
+    NEGATOR = >,
+    RESTRICT = scalarltsel,
+    JOIN = scalarltjoinsel
+);
+
+CREATE OPERATOR >= (
+    LEFTARG = geo_point,
+    RIGHTARG = geo_point,
+    PROCEDURE = geo_point_ge,
+    COMMUTATOR = <= ,
+    NEGATOR = <,
+    RESTRICT = scalarltsel,
+    JOIN = scalarltjoinsel 
+);
+
+
+--
+-- Create an operator class for geo_point to interface to B-tree index
+--
+CREATE OPERATOR CLASS btree_geo_point_ops
+    DEFAULT FOR TYPE geo_point USING btree AS
+        OPERATOR        1       <  ,
+        OPERATOR        2       <= ,
+        OPERATOR        3       =  ,
+        OPERATOR        4       >= ,
+        OPERATOR        5       >  ,
+        FUNCTION        1       geo_point_cmp(geo_point, geo_point);
 
 
 ---------------------------------------------
@@ -152,6 +269,12 @@ CREATE OR REPLACE FUNCTION length(geo_linestring)
    RETURNS float8
    AS 'MODULE_PATHNAME', 'geo_linestring_length'
    LANGUAGE C IMMUTABLE STRICT;
+
+
+CREATE FUNCTION make_array(anyelement)
+   RETURNS anyarray
+   AS 'MODULE_PATHNAME', 'geo_linestring_intersection_points'
+   LANGUAGE C IMMUTABLE;
 
 
 --

@@ -43,6 +43,9 @@
 /* PostgreSQL */
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
+#include <utils/array.h>
+#include <utils/lsyscache.h>
+#include <catalog/pg_type.h>
 
 
 /* C Standard Library */
@@ -176,15 +179,13 @@ geo_linestring_recv(PG_FUNCTION_ARGS)
 
   struct geo_linestring *result = NULL;
 
-  int32 npts;
+  int32 npts = 0;
 
-  int32 srid;
+  int32 srid = 0;
 
-  int i;
+  int base_size = 0;
 
-  int base_size;
-
-  int size;
+  int size = 0;
 
   /*elog(NOTICE, "geo_linestring_recv called");*/
 
@@ -212,7 +213,7 @@ geo_linestring_recv(PG_FUNCTION_ARGS)
  */
   result->dummy = 0;
 
-  for (i = 0; i < npts; i++)
+  for (int i = 0; i < npts; ++i)
   {
     result->coords[i].x = pq_getmsgfloat8(buf);
     result->coords[i].y = pq_getmsgfloat8(buf);
@@ -234,8 +235,6 @@ geo_linestring_send(PG_FUNCTION_ARGS)
 
   StringInfoData buf;
 
-  int32 i;
-
   /*elog(NOTICE, "geo_linestring_send called");*/
 
  if (!PointerIsValid(line))
@@ -247,7 +246,7 @@ geo_linestring_send(PG_FUNCTION_ARGS)
   pq_sendint(&buf, line->srid, sizeof(int32));
   pq_sendint(&buf, line->npts, sizeof(int32));
 
-  for (i = 0; i < line->npts; i ++)
+  for (int i = 0; i < line->npts; ++i)
   {
     pq_sendfloat8(&buf, line->coords[i].x);
     pq_sendfloat8(&buf, line->coords[i].y);
@@ -336,7 +335,7 @@ geo_linestring_length(PG_FUNCTION_ARGS)
 {
   struct geo_linestring *line = PG_GETARG_GEOLINESTRING_TYPE_P(0);
 
-  /*elog(NOTICE, "geo_linestring_is_length called");*/
+  /*elog(NOTICE, "geo_linestring_length called");*/
 
   float8 result = 0.0;
 
@@ -347,6 +346,59 @@ geo_linestring_length(PG_FUNCTION_ARGS)
   result = length((line->coords), (line->npts));
 
   PG_RETURN_FLOAT8(result);
+
+}
+
+
+PG_FUNCTION_INFO_V1(geo_linestring_intersection_points);
+
+Datum
+geo_linestring_intersection_points(PG_FUNCTION_ARGS)
+{
+  bool        isnull;
+  int         ndims;
+  int         dims[MAXDIM];
+  int         lbs[MAXDIM];
+  int16 typlen;
+  bool typbyval;
+  char typalign;
+
+  ArrayType  *result_array;
+  struct geo_linestring *line  = PG_GETARG_GEOLINESTRING_TYPE_P(0);
+
+
+  isnull = PG_ARGISNULL(0);
+
+  ndims = 2;
+
+  // for (int i = 0; i < ndims; i++)
+  // {
+  //   dims[i] = line->npts;
+  //   lbs[i] = 1;
+  // }
+
+  dims[0] = line->npts;
+  lbs[0] = 1;
+
+  Datum* const datum_elems = palloc(line->npts * sizeof(Datum));
+
+  for (int i = 0; i < line->npts; i++)
+  {
+    datum_elems[i] = Float8GetDatum(line->coords[i].x);
+  }
+
+
+  get_typlenbyvalalign(FLOAT8OID, &typlen, &typbyval, &typalign);
+
+
+  /* construct 1-D array*/
+  result_array = construct_array(datum_elems, line->npts, FLOAT8OID, typlen, typbyval, typalign);
+
+  /*construct ndims-D array*/
+  // result_array = construct_md_array(datum_elems, &isnull, ndims, dims, lbs, FLOAT8OID, typlen, typbyval, typalign );
+
+
+  PG_RETURN_ARRAYTYPE_P(result_array);
 
 }
 

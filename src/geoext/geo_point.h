@@ -85,4 +85,16 @@ extern Datum geo_point_to_str(PG_FUNCTION_ARGS);
 extern Datum geo_point_distance(PG_FUNCTION_ARGS);
 
 
+/*
+ * B-tree index support
+ *
+ */
+extern Datum geo_point_cmp(PG_FUNCTION_ARGS);
+extern Datum geo_point_eq(PG_FUNCTION_ARGS);
+extern Datum geo_point_ne(PG_FUNCTION_ARGS);
+extern Datum geo_point_lt(PG_FUNCTION_ARGS);
+extern Datum geo_point_gt(PG_FUNCTION_ARGS);
+extern Datum geo_point_le(PG_FUNCTION_ARGS);
+extern Datum geo_point_ge(PG_FUNCTION_ARGS);
+
 #endif  /* __GEOEXT_H__ */
