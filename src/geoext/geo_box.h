@@ -68,6 +68,20 @@ struct geo_box
 #define PG_GETARG_GEOBOX_TYPE_P(n)  DatumGetGeoBoxTypeP(PG_GETARG_DATUM(n))
 #define PG_RETURN_GEOBOX_TYPE_P(x)  PG_RETURN_POINTER(x)
 
+/*
+ * geo_box operations.
+ *
+ */
+
+/* Operações suportadas pelo tipo geo_box */
+/*
+extern Datum geo_box_in(PG_FUNCTION_ARGS);
+extern Datum geo_box_out(PG_FUNCTION_ARGS);
+extern Datum geo_box_from_text(PG_FUNCTION_ARGS);
+extern Datum geo_box_to_str(PG_FUNCTION_ARGS);
+*/
+
+
 
 /*
 *  GiST:  R-Tree index support
@@ -92,3 +106,6 @@ extern Datum geo_box_below_eq(PG_FUNCTION_ARGS); // Is obsolete
 extern Datum geo_box_above_eq(PG_FUNCTION_ARGS); // Is obsolete
 
 */
+
+
+#endif  /* __GEOEXT_H__ */
