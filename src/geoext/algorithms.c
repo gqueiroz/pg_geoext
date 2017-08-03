@@ -42,7 +42,121 @@
 #include <ctype.h>
 #include <math.h>
 
+/*
+ * Auxiliary Functions
+ *
+ */
+static inline enum segment_relation_type
+overlap_intersection(struct coord2d *p1, struct coord2d *p2,
+                     struct coord2d *q1, struct coord2d *q2,
+                     struct coord2d *ip1, struct coord2d *ip2)
+{
+  struct coord2d *min_p = 0;
+  struct coord2d *max_p = 0;
+  
+  struct coord2d *min_q = 0;
+  struct coord2d *max_q = 0;
+  
+/* are the segments vertical? */
+  if (p1->x == p2->x)
+  {
+/* order points along y-axis */
+    if (p1->y < p2->y)
+    {
+      min_p = p1;
+      max_p = p2;
+    }
+    else
+    {
+      min_p = p2;
+      max_p = p1;
+    }
+    
+    if (q1->y < q2->y)
+    {
+      min_q = q1;
+      max_q = q2;
+    }
+    else
+    {
+      min_q = q2;
+      max_q = q1;
+    }
+    
+/* is p below q? */
+    if (max_p->y < min_q->y)
+      return DISJOINT;
 
+/* is p above q? */
+    if (min_p->y > max_q->y)
+      return DISJOINT;
+
+/* do the segments touch? */
+    if(max_p->y == min_q->y)
+    {
+      *ip1 = *max_p;
+      
+      return TOUCH;
+    }
+    
+    *ip1 = min_p->y > min_q->y ? *min_p : *min_q;
+    *ip2 = max_p->y < max_q->y ? *max_p : *max_q;
+    
+    return OVERLAP;
+  }
+  else
+  {
+/* order points along the x-axis! */
+    if (p1->x < p2->x)
+    {
+      min_p = p1;
+      max_p = p2;
+    }
+    else
+    {
+      min_p = p2;
+      max_p = p1;
+    }
+    
+    if (q1->x < q2->x)
+    {
+      min_q = q1;
+      max_q = q2;
+    }
+    else
+    {
+      min_q = q2;
+      max_q = q1;
+    }
+    
+/* is p left of q? */
+    if (max_p->x < min_q->x)
+      return DISJOINT;
+
+/* is p right of q? */
+    if (min_p->x > max_q->x)
+      return DISJOINT;
+
+/* do the segments touch? */
+    if(max_p->x == min_q->x)
+    {
+      *ip1 = *max_p;
+      
+      return TOUCH;
+    }
+    
+    *ip1 = min_p->x > min_q->x ? *min_p : *min_q;
+    *ip2 = max_p->x < max_q->x ? *max_p : *max_q;
+    
+    return OVERLAP;
+  }
+}
+
+
+/*
+ * Geometric Primitives
+ *
+ */
 int equals(struct coord2d *c1, struct coord2d *c2)
 {
   return (c1->x == c2->x) && (c1->y == c2->y);
@@ -136,4 +250,73 @@ int point_in_polygon(struct coord2d *pt,
   }
 
   return inside_flag;
+}
+
+
+enum segment_relation_type
+compute_intersection(struct coord2d* p1, struct coord2d* p2,
+                     struct coord2d* q1, struct coord2d* q2,
+                     struct coord2d* ip1, struct coord2d* ip2)
+{
+  double ax = p2->x - p1->x;
+  double ay = p2->y - p1->y;
+
+  double bx = q1->x - q2->x;
+  double by = q1->y - q2->y;
+  
+  double den = ay * bx - ax * by;
+  
+  if (den == 0.0) /* are they collinear? */
+  {
+    return overlap_intersection(p1, p2, q1, q2, ip1, ip2);
+  }
+  else
+  {
+/* they are not collinear, let's see if they intersects */
+    double cx = p1->x - q1->x;
+    double cy = p1->y - q1->y;
+  
+/* is alpha in the range [0..1]? */
+    double num_alpha = by * cx - bx * cy;
+    
+    if (den > 0.0)
+    {
+/* is alpha before the range [0..1] or after it? */
+      if((num_alpha < 0.0) || (num_alpha > den))
+        return DISJOINT;
+    }
+    else /* den < 0 */
+    {
+/* is alpha before the range [0..1] or after it? */
+      if ( (num_alpha > 0.0) || (num_alpha < den) )
+        return DISJOINT;
+    }
+    
+/* is beta in the range [0..1]? */
+    double num_beta = ax * cy - ay * cx;
+
+    if (den > 0.0)
+    {
+/* is beta before the range [0..1] or after it? */
+      if((num_beta < 0.0) || (num_beta > den))
+        return DISJOINT;
+    }
+    else /* den < 0 */
+    {
+/* is beta before the range [0..1] or after it? */
+      if ( (num_beta > 0.0) || (num_beta < den) )
+        return DISJOINT;
+    }
+    
+    assert(num_alpha != 0);
+    assert(num_beta != 0);
+  
+/* compute intersection point */
+    double alpha = num_alpha / den;
+  
+    ip1->x = p1->x + alpha * (p2->x - p1->x);
+    ip1->y = p1->y + alpha * (p2->y - p1->y);
+
+    return CROSS;
+  }
 }

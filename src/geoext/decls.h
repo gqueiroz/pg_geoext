@@ -50,4 +50,16 @@ struct coord2d
   double y;
 };
 
+/*
+ * \brief The type of spatial relation between two segments.
+ *
+ */
+enum segment_relation_type
+{
+  DISJOINT, /**< Segments do not intersect.                               */
+  CROSS,    /**< Segments crosses in a single inner point.                */
+  TOUCH,    /**< Segments touches in one of their end-points.             */
+  OVERLAP   /**< Segments overlap: their intersection is another segment. */
+};
+
 #endif  /* __GEOEXT_DECLS_H__ */
