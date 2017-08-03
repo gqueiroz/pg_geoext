@@ -87,10 +87,10 @@ SELECT * FROM t2;
 
 SELECT to_str(c) FROM t2;
 
-SELECT line_to_array(linestring_from_text('LINESTRING(11 11, 12 12, 13 13, 14 14, 15 15, 11 11)'));
+SELECT linestring_to_array(linestring_from_text('LINESTRING(11 11, 12 12, 13 13, 14 14, 15 15, 11 11)'));
 
-SELECT unnest((line_to_array(linestring_from_text('LINESTRING(11 11, 12 12, 13 13, 14 14, 15 15, 11 11)')))[1:1]);
+SELECT unnest((linestring_to_array(linestring_from_text('LINESTRING(11 11, 12 12, 13 13, 14 14, 15 15, 11 11)')))[1:1]);
 
-SELECT (line_to_array(linestring_from_text('LINESTRING(11 11, 12 12, 13 13, 14 14, 15 15, 11 11)')))[2:2];
+SELECT (linestring_to_array(linestring_from_text('LINESTRING(11 11, 12 12, 13 13, 14 14, 15 15, 11 11)')))[2:2];
 
-SELECT to_str(line_from_arrays(ARRAY[11,12,13,14,15,11], ARRAY[11,12,13,14,15,11]));
+SELECT to_str(linestring_from_arrays(ARRAY[11,12,13,14,15,11], ARRAY[11,12,13,14,15,11]));
