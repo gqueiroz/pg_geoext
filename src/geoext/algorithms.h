@@ -93,4 +93,29 @@ int point_in_polygon(struct coord2d* pt,
 double area(struct coord2d *coord, int npts);
 
 
+/*
+ * \brief Computes the intersection point(s) between two line segments.
+ *
+ * If the segments overlap this function returns two points representing
+ * the extreme points of the intersection.
+ *
+ * \param p1  The start point of segment p.
+ * \param p2  The end point of segment p.
+ * \param q1  The start point of segment q.
+ * \param q2  The end point of segment q.
+ * \param ip1 Intersection point of p and q.
+ * \param ip2 If the segment overlap returns a second intersection point between p and q.
+ *
+ * \return The type of intersection between line segments.
+ *
+ * \note Based on the algorithm of Franklin Antonio (1992) in Graphics Gems III.
+ *
+ * \warning This function does not perform bounding box comparison between segment pair.
+ *
+ */
+enum segment_relation_type
+compute_intersection(struct coord2d* p1, struct coord2d* p2,
+                     struct coord2d* q1, struct coord2d* q2,
+                     struct coord2d* ip1, struct coord2d* ip2);
+
 #endif  /* __GEOEXT_ALGORITHMS_H__ */
