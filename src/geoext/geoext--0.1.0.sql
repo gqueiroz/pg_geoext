@@ -270,6 +270,12 @@ CREATE OR REPLACE FUNCTION length(geo_linestring)
    LANGUAGE C IMMUTABLE STRICT;
 
 
+CREATE FUNCTION make_array(anyelement)
+   RETURNS anyarray
+   AS 'MODULE_PATHNAME', 'geo_linestring_intersection_points'
+   LANGUAGE C IMMUTABLE;
+
+
 --
 -- Register the geo_linestring Data Type
 --

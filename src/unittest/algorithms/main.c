@@ -54,6 +54,7 @@ void test_hex_encoding_decoding();
 
 void test_lengh();
 
+void test_intersection();
 
 int main()
 {
@@ -64,6 +65,8 @@ int main()
   test_hex_encoding_decoding();
 
   test_lengh();
+  
+  test_intersection();
 
   return EXIT_SUCCESS;
 }
@@ -376,5 +379,53 @@ void test_lengh()
     printf("%0.2f\n", l);
 
   }
+}
+
+
+void test_intersection()
+{
+  {
+    struct coord2d p[] = { {1.0, 1.0}, {3.0, 3.0} };
+    
+    struct coord2d q[] = { {3.0, 1.0}, {1.0, 3.0} };
+    
+    struct coord2d ips[2];
+    
+    enum segment_relation_type rel = compute_intersection(p, p + 1,
+                                                          q, q + 1,
+                                                          ips, ips + 1);
+    
+    printf("%d\n", rel == CROSS);
+  }
+  
+  {
+    struct coord2d p[] = { {1.0, 1.0}, {3.0, 3.0} };
+    
+    struct coord2d q[] = { {1.0, 3.0}, {3.0, 1.0} };
+    
+    struct coord2d ips[2];
+    
+    enum segment_relation_type rel = compute_intersection(p, p + 1,
+                                                          q, q + 1,
+                                                          ips, ips + 1);
+    
+    printf("%d\n", rel == CROSS);
+  }
+  
+  {
+    struct coord2d p[] = { {1.0, 1.0}, {3.0, 3.0} };
+    
+    struct coord2d q[] = { {0.0, 4.0}, {1.0, 3.0} };
+    
+    struct coord2d ips[2];
+    
+    enum segment_relation_type rel = compute_intersection(p, p + 1,
+                                                          q, q + 1,
+                                                          ips, ips + 1);
+    
+    printf("%d\n", rel == CROSS);
+  }
 
 }
+
+
