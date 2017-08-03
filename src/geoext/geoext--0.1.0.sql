@@ -271,12 +271,12 @@ CREATE OR REPLACE FUNCTION length(geo_linestring)
    LANGUAGE C IMMUTABLE STRICT;
 
 
-CREATE FUNCTION line_to_array(geo_linestring)
+CREATE FUNCTION linestring_to_array(geo_linestring)
    RETURNS float8[]
    AS 'MODULE_PATHNAME', 'geo_linestring_to_array'
    LANGUAGE C IMMUTABLE;
 
-CREATE OR REPLACE FUNCTION line_from_arrays(float8[], float8[])
+CREATE OR REPLACE FUNCTION linestring_from_arrays(float8[], float8[])
    RETURNS geo_linestring
    AS 'MODULE_PATHNAME', 'geo_linestring_from_array'
    LANGUAGE C STRICT;
