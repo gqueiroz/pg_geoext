@@ -86,6 +86,20 @@ int point_in_polygon(struct coord2d* pt,
                      int num_vertices);
 
 
+ /*
+* \brief Transform a negative double number to positive double number.
+*
+*/
+double absolute(double value);
+
+
+/*
+* \brief Computes the area of polygon.
+*
+*/
+double area(struct coord2d *coord, int npts);
+
+
 /*
  * \brief Computes the intersection point(s) between two line segments.
  *

@@ -53,10 +53,10 @@ overlap_intersection(struct coord2d *p1, struct coord2d *p2,
 {
   struct coord2d *min_p = 0;
   struct coord2d *max_p = 0;
-  
+
   struct coord2d *min_q = 0;
   struct coord2d *max_q = 0;
-  
+
 /* are the segments vertical? */
   if (p1->x == p2->x)
   {
@@ -71,7 +71,7 @@ overlap_intersection(struct coord2d *p1, struct coord2d *p2,
       min_p = p2;
       max_p = p1;
     }
-    
+
     if (q1->y < q2->y)
     {
       min_q = q1;
@@ -82,7 +82,7 @@ overlap_intersection(struct coord2d *p1, struct coord2d *p2,
       min_q = q2;
       max_q = q1;
     }
-    
+
 /* is p below q? */
     if (max_p->y < min_q->y)
       return DISJOINT;
@@ -95,13 +95,13 @@ overlap_intersection(struct coord2d *p1, struct coord2d *p2,
     if(max_p->y == min_q->y)
     {
       *ip1 = *max_p;
-      
+
       return TOUCH;
     }
-    
+
     *ip1 = min_p->y > min_q->y ? *min_p : *min_q;
     *ip2 = max_p->y < max_q->y ? *max_p : *max_q;
-    
+
     return OVERLAP;
   }
   else
@@ -117,7 +117,7 @@ overlap_intersection(struct coord2d *p1, struct coord2d *p2,
       min_p = p2;
       max_p = p1;
     }
-    
+
     if (q1->x < q2->x)
     {
       min_q = q1;
@@ -128,7 +128,7 @@ overlap_intersection(struct coord2d *p1, struct coord2d *p2,
       min_q = q2;
       max_q = q1;
     }
-    
+
 /* is p left of q? */
     if (max_p->x < min_q->x)
       return DISJOINT;
@@ -141,13 +141,13 @@ overlap_intersection(struct coord2d *p1, struct coord2d *p2,
     if(max_p->x == min_q->x)
     {
       *ip1 = *max_p;
-      
+
       return TOUCH;
     }
-    
+
     *ip1 = min_p->x > min_q->x ? *min_p : *min_q;
     *ip2 = max_p->x < max_q->x ? *max_p : *max_q;
-    
+
     return OVERLAP;
   }
 }
@@ -177,7 +177,7 @@ double euclidian_distance(struct coord2d *c1, struct coord2d *c2)
 double length(struct coord2d *c, int num_vertices)
 {
   double result = 0.0;
-    
+
   const int n = num_vertices - 1;
 
   for(int i = 0; i < n; ++i)
@@ -252,6 +252,32 @@ int point_in_polygon(struct coord2d *pt,
   return inside_flag;
 }
 
+/* to get a number and if this number is negative, transform to positive value*/
+double absolute(double value) {
+    if (value < 0)
+      return -value;
+
+    return value;
+}
+
+
+double area(struct coord2d *coord, int npts)
+{
+  double area = 0;         // Accumulates area in the loop
+
+  for (int i = 0; i < npts-1; i++)
+    {
+
+      /*Use a formules to calculates the area from polygon points
+      area = (x1 * y2 - y1 * x2) + (x2 * y3 - y2 * x3) + ..... n / 2 */
+
+      area += ((coord[i].x * coord[i+1].y) -
+                    (coord[i].y * coord[i+1].x));
+    }
+    area /= 2;
+
+  return absolute(area);
+}
 
 enum segment_relation_type
 compute_intersection(struct coord2d* p1, struct coord2d* p2,
@@ -263,9 +289,9 @@ compute_intersection(struct coord2d* p1, struct coord2d* p2,
 
   double bx = q1->x - q2->x;
   double by = q1->y - q2->y;
-  
+
   double den = ay * bx - ax * by;
-  
+
   if (den == 0.0) /* are they collinear? */
   {
     return overlap_intersection(p1, p2, q1, q2, ip1, ip2);
@@ -275,10 +301,10 @@ compute_intersection(struct coord2d* p1, struct coord2d* p2,
 /* they are not collinear, let's see if they intersects */
     double cx = p1->x - q1->x;
     double cy = p1->y - q1->y;
-  
+
 /* is alpha in the range [0..1]? */
     double num_alpha = by * cx - bx * cy;
-    
+
     if (den > 0.0)
     {
 /* is alpha before the range [0..1] or after it? */
@@ -291,7 +317,7 @@ compute_intersection(struct coord2d* p1, struct coord2d* p2,
       if ( (num_alpha > 0.0) || (num_alpha < den) )
         return DISJOINT;
     }
-    
+
 /* is beta in the range [0..1]? */
     double num_beta = ax * cy - ay * cx;
 
@@ -307,13 +333,13 @@ compute_intersection(struct coord2d* p1, struct coord2d* p2,
       if ( (num_beta > 0.0) || (num_beta < den) )
         return DISJOINT;
     }
-    
+
     assert(num_alpha != 0);
     assert(num_beta != 0);
-  
+
 /* compute intersection point */
     double alpha = num_alpha / den;
-  
+
     ip1->x = p1->x + alpha * (p2->x - p1->x);
     ip1->y = p1->y + alpha * (p2->y - p1->y);
 
