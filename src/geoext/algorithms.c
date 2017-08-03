@@ -252,6 +252,32 @@ int point_in_polygon(struct coord2d *pt,
   return inside_flag;
 }
 
+/* to get a number and if this number is negative, transform to positive value*/
+double absolute(double value) {
+    if (value < 0)
+      return -value;
+
+    return value;
+}
+
+
+double area(struct coord2d *coord, int npts)
+{
+  double area = 0;         // Accumulates area in the loop
+
+  for (int i = 0; i < npts-1; i++)
+    {
+
+      /*Use a formules to calculates the area from polygon points
+      area = (x1 * y2 - y1 * x2) + (x2 * y3 - y2 * x3) + ..... n / 2 */
+
+      area += ((coord[i].x * coord[i+1].y) -
+                    (coord[i].y * coord[i+1].x));
+    }
+    area /= 2;
+
+  return absolute(area);
+}
 
 enum segment_relation_type
 compute_intersection(struct coord2d* p1, struct coord2d* p2,
