@@ -349,42 +349,65 @@ geo_linestring_length(PG_FUNCTION_ARGS)
 
 }
 
-
+/*
 PG_FUNCTION_INFO_V1(geo_linestring_intersection_points);
 
+Datum geo_linestring_intersection_points(PG_FUNCTION_ARGS){}
+*/
+
+PG_FUNCTION_INFO_V1(geo_linestring_to_array);
+
 Datum
-geo_linestring_intersection_points(PG_FUNCTION_ARGS)
+geo_linestring_to_array(PG_FUNCTION_ARGS)
 {
-  bool        isnull;
-  int         ndims;
-  int         dims[MAXDIM];
-  int         lbs[MAXDIM];
-  int16 typlen;
-  bool typbyval;
-  char typalign;
 
   ArrayType  *result_array;
+
+  Datum *datum_elems;
+
   struct geo_linestring *line  = PG_GETARG_GEOLINESTRING_TYPE_P(0);
 
+  bool *isnull;
 
-  isnull = PG_ARGISNULL(0);
+  int ndims, dims[MAXDIM],lbs[MAXDIM], i, j;
+
+  int16 typlen;
+
+  bool typbyval;
+
+  char typalign;
+
+
+
+  isnull = (bool *) palloc((line->npts * 2) * sizeof(bool));
+  datum_elems = (Datum *) palloc((line->npts * 2) * sizeof(Datum));
+
+  if (!PointerIsValid(line))
+    ereport(ERROR, (errcode (ERRCODE_INVALID_PARAMETER_VALUE),
+                    errmsg("missing argument for geo_linestring")));
+
 
   ndims = 2;
-
-  // for (int i = 0; i < ndims; i++)
-  // {
-  //   dims[i] = line->npts;
-  //   lbs[i] = 1;
-  // }
-
-  dims[0] = line->npts;
   lbs[0] = 1;
+  dims[0] = 2;
+  lbs[1] = 1;
+  dims[1] = line->npts;
 
-  Datum* const datum_elems = palloc(line->npts * sizeof(Datum));
 
-  for (int i = 0; i < line->npts; i++)
+  j = 0;
+  for (i = 0; i < line->npts; i++)
   {
-    datum_elems[i] = Float8GetDatum(line->coords[i].x);
+    datum_elems[j] = Float8GetDatum(line->coords[i].x);
+    isnull[j] = false;
+    j++;
+  }
+
+
+  for (i = 0 ; i < line->npts; i++)
+  {
+    datum_elems[j] = Float8GetDatum(line->coords[i].y);
+    isnull[j] = false;
+    j++;
   }
 
 
@@ -392,17 +415,108 @@ geo_linestring_intersection_points(PG_FUNCTION_ARGS)
 
 
   /* construct 1-D array*/
-  result_array = construct_array(datum_elems, line->npts, FLOAT8OID, typlen, typbyval, typalign);
+  // result_array = construct_array(datum_elems, line->npts*2, FLOAT8OID, typlen, typbyval, typalign);
 
   /*construct ndims-D array*/
-  // result_array = construct_md_array(datum_elems, &isnull, ndims, dims, lbs, FLOAT8OID, typlen, typbyval, typalign );
+  result_array = construct_md_array(datum_elems, isnull, ndims, dims, lbs, FLOAT8OID, typlen, typbyval, typalign );
 
 
   PG_RETURN_ARRAYTYPE_P(result_array);
 
 }
 
+PG_FUNCTION_INFO_V1(geo_linestring_from_array);
+
+Datum
+geo_linestring_from_array(PG_FUNCTION_ARGS)
+{
+
+  ArrayType *array_x;
+
+  ArrayType *array_y;
+
+  /* variables for "deconstructed" array*/
+  Datum *datums_x;
+  Datum *datums_y;
+  bool *nulls_x;
+  bool *nulls_y;
+  int count_x, count_y;
 
 
+  int16 typlen;
 
-/*extern Datum geo_linestring_intersection_points(PG_FUNCTION_ARGS);*/
+  bool typbyval;
+
+  char typalign;
+
+  struct geo_linestring *line = NULL;
+
+  int32 npts;
+
+  int32 srid = 0;
+
+  int base_size;
+
+  int size;
+
+  /*elog(NOTICE, "geo_linestring_from_array called);*/
+
+  array_x = PG_GETARG_ARRAYTYPE_P(0);
+  array_y = PG_GETARG_ARRAYTYPE_P(1);
+
+
+  if (!PointerIsValid(array_x))
+    ereport(ERROR, (errcode (ERRCODE_INVALID_PARAMETER_VALUE),
+                    errmsg("missing argument one for geo_linestring_from_array")));
+
+
+  if (!PointerIsValid(array_y))
+    ereport(ERROR, (errcode (ERRCODE_INVALID_PARAMETER_VALUE),
+                    errmsg("missing argument two for geo_linestring_from_array")));
+
+
+  /*elog(NOTICE, "geo_linestring_from_array insert numbers in line");*/
+
+  /*values found in table pg_type*/
+  get_typlenbyvalalign(FLOAT8OID, &typlen, &typbyval, &typalign);
+
+  deconstruct_array(array_x, FLOAT8OID, typlen, typbyval, typalign , &datums_x, &nulls_x, &count_x);
+  deconstruct_array(array_y, FLOAT8OID, typlen, typbyval, typalign , &datums_y, &nulls_y, &count_y);
+
+  /* elog(NOTICE, "dimension of arrays %d", count_x); */
+  if(count_x != count_y)
+    ereport(ERROR, (errcode (ERRCODE_INVALID_PARAMETER_VALUE),
+                  errmsg("different dimension of arrays geo_linestring_from_array")));
+
+  npts = count_x;
+
+  base_size = npts * sizeof(struct coord2d);
+
+  size = offsetof(struct geo_linestring, coords) + base_size;
+
+  if(npts < 2)
+    ereport(ERROR,
+            (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+            errmsg("invalid syntax for geo_linestring! ")));
+
+  line = (struct geo_linestring*) palloc(size);
+
+  SET_VARSIZE(line, size);
+
+  line->npts = npts;
+  line->srid = srid;
+
+
+  for(int i = 0; i < npts; i++)
+  {
+    line->coords[i].x = DatumGetFloat8(datums_x[i]);
+    /*elog(NOTICE, "geo_linestring x %g",line->coords[i].x );*/
+
+    line->coords[i].y = DatumGetFloat8(datums_y[i]);
+    /*elog(NOTICE, "geo_linestring y %g",line->coords[i].y );*/
+  }
+
+  PG_RETURN_GEOLINESTRING_TYPE_P(line);
+
+
+}

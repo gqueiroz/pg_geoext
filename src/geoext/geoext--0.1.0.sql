@@ -193,7 +193,7 @@ CREATE OPERATOR >= (
     COMMUTATOR = <= ,
     NEGATOR = <,
     RESTRICT = scalarltsel,
-    JOIN = scalarltjoinsel 
+    JOIN = scalarltjoinsel
 );
 
 
@@ -271,10 +271,15 @@ CREATE OR REPLACE FUNCTION length(geo_linestring)
    LANGUAGE C IMMUTABLE STRICT;
 
 
-CREATE FUNCTION make_array(anyelement)
-   RETURNS anyarray
-   AS 'MODULE_PATHNAME', 'geo_linestring_intersection_points'
+CREATE FUNCTION line_to_array(geo_linestring)
+   RETURNS float8[]
+   AS 'MODULE_PATHNAME', 'geo_linestring_to_array'
    LANGUAGE C IMMUTABLE;
+
+CREATE OR REPLACE FUNCTION line_from_arrays(float8[], float8[])
+   RETURNS geo_linestring
+   AS 'MODULE_PATHNAME', 'geo_linestring_from_array'
+   LANGUAGE C STRICT;
 
 
 --
