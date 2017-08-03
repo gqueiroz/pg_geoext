@@ -86,6 +86,13 @@ int point_in_polygon(struct coord2d* pt,
                      int num_vertices);
 
 
+ /*
+* \brief Transform a negative double number to positive double number.
+*
+*/
+double absolute(double value);
+
+
 /*
 * \brief Computes the area of polygon.
 *
