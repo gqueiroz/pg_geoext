@@ -260,7 +260,7 @@ double absolute(double value) {
     return value;
 }
 
-
+/* Return the area of polygon */
 double area(struct coord2d *coord, int npts)
 {
   double area = 0;         // Accumulates area in the loop
