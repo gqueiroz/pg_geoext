@@ -295,3 +295,52 @@ CREATE TYPE geo_linestring
     storage = extended,
     alignment = double
 );
+
+----------------------------------------
+----------------------------------------
+-- Introduces the geo_box Data Type --
+----------------------------------------
+----------------------------------------
+
+--
+-- Drop geo_box type if it exists and forward its declaration
+--
+DROP TYPE IF EXISTS geo_box;
+CREATE TYPE geo_box;
+
+--
+-- Box Input/Output Functions
+--
+CREATE OR REPLACE FUNCTION geo_box_in(cstring)
+    RETURNS geo_box
+    AS 'MODULE_PATHNAME', 'geo_box_in'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION geo_box_out(geo_box)
+    RETURNS cstring
+    AS 'MODULE_PATHNAME', 'geo_box_out'
+    LANGUAGE C IMMUTABLE STRICT;
+
+--
+-- Box Operators
+--
+CREATE OR REPLACE FUNCTION box_from_text(cstring)
+    RETURNS geo_box
+    AS 'MODULE_PATHNAME', 'geo_box_from_text'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION to_str(geo_box)
+    RETURNS cstring
+    AS 'MODULE_PATHNAME', 'geo_box_to_str'
+    LANGUAGE C IMMUTABLE STRICT;
+--
+-- Register the geo_box Data Type
+--
+CREATE TYPE geo_box(
+    input = geo_box_in,
+    output = geo_box_out,
+    --receive = geo_box_recv,
+    --send = geo_box_send,
+    internallength = 32,
+    alignment = double
+);

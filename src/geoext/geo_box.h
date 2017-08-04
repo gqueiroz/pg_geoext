@@ -60,7 +60,7 @@ struct geo_box
 /*
 * geo_box is a fixed-size pass-by-reference type.
 *
-* Below we have the fmgr interface macros for dealing with a geo_point.
+* Below we have the fmgr interface macros for dealing with a geo_box.
 *
 */
 
@@ -74,12 +74,12 @@ struct geo_box
  */
 
 /* Operações suportadas pelo tipo geo_box */
-/*
+
 extern Datum geo_box_in(PG_FUNCTION_ARGS);
 extern Datum geo_box_out(PG_FUNCTION_ARGS);
 extern Datum geo_box_from_text(PG_FUNCTION_ARGS);
 extern Datum geo_box_to_str(PG_FUNCTION_ARGS);
-*/
+
 
 
 

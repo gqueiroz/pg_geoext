@@ -1,7 +1,7 @@
 /*
   Copyright (C) 2017 National Institute For Space Research (INPE) - Brazil.
 
-  This file is part of pg_geoext, a simple PostgreSQL extension for 
+  This file is part of pg_geoext, a simple PostgreSQL extension for
   for teaching spatial database classes.
 
   pg_geoext is free software: you can redistribute it and/or modify
@@ -60,6 +60,9 @@
  */
 #define GEOEXT_GEOPOINT_WKT_TOKEN "POINT"
 #define GEOEXT_GEOPOINT_WKT_TOKEN_LEN 5
+
+#define GEOEXT_GEOBOX_WKT_TOKEN "BOX"
+#define GEOEXT_GEOBOX_WKT_TOKEN_LEN 3
 
 #define GEOEXT_GEOLINESTRING_WKT_TOKEN "LINESTRING"
 #define GEOEXT_GEOLINESTRING_WKT_TOKEN_LEN 10
@@ -281,6 +284,107 @@ char* geo_point_wkt_encode(struct geo_point *pt)
   return str.data;
 }
 
+void geo_box_wkt_decode(char *str, struct geo_box *gbox)
+{
+  /* search for the occurence of: 'BOX' */
+  char *cp = strcasestr(str, GEOEXT_GEOBOX_WKT_TOKEN);
+
+  /* if the substring 'BOX' is not found in the text, we have an invalid WKT */
+  if (!PointerIsValid(cp))
+    ereport(ERROR,
+            (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+            errmsg("invalid input syntax for type %s: \"%s\"",
+            "geo_box", str)));
+
+  cp+= GEOEXT_GEOBOX_WKT_TOKEN_LEN;
+
+  /* skip spaces, if any */
+  while (*cp != '\0' && isspace((unsigned char) *cp))
+    ++cp;
+
+  /* If we don't find a '(', the WKT is invalid */
+  if (*cp != GEOEXT_GEOM_LDELIM)
+    ereport(ERROR,
+            (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+            errmsg("invalid input syntax for type %s: \"%s\"",
+            "geo_box", str)));
+
+  /* skip the '(' */
+  ++cp;
+
+  /* try to decode a pair of coordinates */
+  coord2d_decode(cp, &(gbox->high), &cp, "geo_box", str);
+
+
+  if(*cp == GEOEXT_GEOM_COLLECTION_DELIM)
+  {
+    /*elog(NOTICE, "found ',' ");*/
+    ++cp;
+  }
+
+  /* try to decode a pair of coordinates */
+  coord2d_decode(cp, &(gbox->low), &cp, "geo_box", str);
+
+  while (isspace((unsigned char) *str))
+    ++str;
+
+  /* If we don't find a ')' after reading the x and y coordinates, the WKT is invalid */
+  if (*cp != GEOEXT_GEOM_RDELIM)
+    ereport(ERROR,
+            (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+            errmsg("invalid input syntax for type %s: \"%s\"",
+            "geo_box", str)));
+
+  /* skip the ')' */
+  ++cp;
+
+  /* skip spaces, if any */
+  while (*cp != '\0' && isspace((unsigned char) *cp))
+    ++cp;
+
+  /* if we still have characters, the WKT is invalid */
+  if(*cp != '\0')
+    ereport(ERROR,
+            (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+            errmsg("invalid input syntax for type %s: \"%s\"",
+            "geo_box", str)));
+
+
+}
+
+char* geo_box_wkt_encode(struct geo_box *gbox)
+{
+  StringInfoData str;
+
+  initStringInfo(&str);
+
+  /*elog(NOTICE, "geo_box_wkt_encode");*/
+
+  appendStringInfoString(&str, GEOEXT_GEOBOX_WKT_TOKEN);
+
+  appendStringInfoChar(&str, GEOEXT_GEOM_LDELIM);
+
+  char *hxstr = float8out_internal(gbox->high.x);
+  char *hystr = float8out_internal(gbox->high.y);
+
+  appendStringInfo(&str, "%s %s", hxstr, hystr);
+
+  char *lxstr = float8out_internal(gbox->low.x);
+  char *lystr = float8out_internal(gbox->low.y);
+
+  appendStringInfoString(&str, ", ");
+
+  appendStringInfo(&str, "%s %s", lxstr, lystr);
+
+  pfree(hxstr);
+  pfree(hystr);
+  pfree(lxstr);
+  pfree(lystr);
+
+  appendStringInfoChar(&str, GEOEXT_GEOM_RDELIM);
+
+  return str.data;
+}
 
 void geo_linestring_wkt_decode(char *str, struct geo_linestring* lstr)
 {

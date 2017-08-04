@@ -1,7 +1,7 @@
 /*
   Copyright (C) 2017 National Institute For Space Research (INPE) - Brazil.
 
-  This file is part of pg_geoext, a simple PostgreSQL extension for 
+  This file is part of pg_geoext, a simple PostgreSQL extension for
   for teaching spatial database classes.
 
   pg_geoext is free software: you can redistribute it and/or modify
@@ -45,6 +45,7 @@
 #include "geo_linestring.h"
 #include "geo_point.h"
 #include "geo_polygon.h"
+#include "geo_box.h"
 
 
 /*
@@ -75,6 +76,25 @@ void geo_point_wkt_decode(char *str, struct geo_point *pt);
  *
  */
 char* geo_point_wkt_encode(struct geo_point *pt);
+
+
+/*
+ * \brief Convert a WKT string to a geo_box.
+ *
+ * \param str  A string with the following format: 'BOX(X1 Y1, X2 Y2)'.
+ * \param gbox A geo_box data
+ *
+ */
+void geo_box_wkt_decode(char *str, struct geo_box *gbox);
+
+
+/*
+ * \brief Convert a geo_box to a WKT string.
+ *
+ * \param gbox  A geo_box data.
+ *
+ */
+char* geo_box_wkt_encode(struct geo_box *gbox);
 
 
 /*
