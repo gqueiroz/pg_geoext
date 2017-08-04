@@ -46,6 +46,7 @@
 #include <utils/array.h>
 #include <utils/lsyscache.h>
 #include <catalog/pg_type.h>
+#include <funcapi.h>
 
 
 /* C Standard Library */
@@ -349,18 +350,136 @@ geo_linestring_length(PG_FUNCTION_ARGS)
 
 }
 
-/*
+
+/*return a row or composite-type value*/
+/*test int value return*/
+/*example from PostgreSQL documentation*/
+
 PG_FUNCTION_INFO_V1(geo_linestring_intersection_points);
 
-Datum geo_linestring_intersection_points(PG_FUNCTION_ARGS){}
-*/
+Datum geo_linestring_intersection_points_v1(PG_FUNCTION_ARGS)
+{
+  elog(NOTICE, "geo_linestring_intersection_points_v1 called");
+
+  FuncCallContext *funcctx; /*help control to save and remember state */
+  MemoryContext oldcontext, newcontext;
+  Datum result;
+  uint32 ct_call;
+  TupleDesc tupdesc;
+  AttInMetadata *attinmeta;
+
+  // struct line_reverse_tuple_args *args; /*aux struct for save state*/
+
+  // struct geo_linestring *line1;
+  // struct geo_linestring *line2;
+
+  elog(NOTICE, "is being called called");
+
+  /* Determine if the function is being called for the first time.*/
+  if(SRF_IS_FIRSTCALL())
+  {
+    elog(NOTICE, "geo_linestring_intersection_points_v1 first called");
+
+    /* initialize the FuncCallContext */
+    funcctx = SRF_FIRSTCALL_INIT();
+
+    /* switch to memory context appropriate for multiple function calls */
+    newcontext = funcctx->multi_call_memory_ctx;
+		oldcontext = MemoryContextSwitchTo(newcontext);
+
+    // line1 = PG_GETARG_GEOLINESTRING_TYPE_P(0);
+    // line2 = PG_GETARG_GEOLINESTRING_TYPE_P(1);
+
+    /* allocate and zero-fill struct for persisting extracted arguments*/
+    //args = palloc0(sizeof(struct line_reverse_tuple_args));
+
+    //funcctx->user_fctx = args;
+
+    /* total number of tuples to be returned */
+    funcctx->max_calls = 3;
+
+    /*
+		 * Build a tuple description for an
+		 */
+		/*tupdesc = RelationNameGetTupleDesc("line_intersection_pts");*/
+    /* Build a tuple descriptor for our result type */
+    if (get_call_result_type(fcinfo, NULL, &tupdesc) != TYPEFUNC_COMPOSITE)
+        ereport(ERROR,
+                (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+                 errmsg("function returning record called in context "
+                        "that cannot accept type record")));
+
+
+		/*
+		 * generate attribute metadata needed later to produce
+		 * tuples from raw C strings
+		 */
+		attinmeta = TupleDescGetAttInMetadata(tupdesc);
+		funcctx->attinmeta = attinmeta;
+
+
+    /* restore memory context */
+    MemoryContextSwitchTo(oldcontext);
+
+    elog(NOTICE, "geo_linestring_intersection_points_v1 end first call");
+
+  }
+
+  funcctx = SRF_PERCALL_SETUP();
+
+
+  ct_call = funcctx->call_cntr;
+  attinmeta = funcctx->attinmeta;
+
+  elog(NOTICE, "funcapi others call");
+
+  if (ct_call < funcctx->max_calls)
+  {
+    HeapTuple tuple;
+    char       **values;
+
+    /*
+   * Prepare a values array for building the returned tuple.
+   * This should be an array of C strings which will
+   * be processed later by the type input functions.
+   */
+    values = (char **) palloc(3 * sizeof(char *));
+    values[0] = (char *) palloc(16 * sizeof(char));
+    values[1] = (char *) palloc(16 * sizeof(char));
+    values[2] = (char *) palloc(16 * sizeof(char));
+
+    snprintf(values[0], 16, "%d", 1 * PG_GETARG_INT32(1));
+    snprintf(values[1], 16, "%d", 2 * PG_GETARG_INT32(1));
+    snprintf(values[2], 16, "%d", 3 * PG_GETARG_INT32(1));
+
+    /* build a tuple */
+    tuple = BuildTupleFromCStrings(attinmeta, values);
+
+    /* make the tuple into a datum */
+    result = HeapTupleGetDatum(tuple);
+
+    /* clean up (this is not really necessary) */
+    pfree(values[0]);
+    pfree(values[1]);
+    pfree(values[2]);
+    pfree(values);
+
+    SRF_RETURN_NEXT(funcctx, result);
+  }
+
+  else
+  {
+    SRF_RETURN_DONE(funcctx);
+  }
+
+}
+
 
 PG_FUNCTION_INFO_V1(geo_linestring_to_array);
 
 Datum
 geo_linestring_to_array(PG_FUNCTION_ARGS)
 {
-
   ArrayType  *result_array;
 
   Datum *datum_elems;
@@ -377,8 +496,6 @@ geo_linestring_to_array(PG_FUNCTION_ARGS)
 
   char typalign;
 
-
-
   isnull = (bool *) palloc((line->npts * 2) * sizeof(bool));
   datum_elems = (Datum *) palloc((line->npts * 2) * sizeof(Datum));
 
@@ -386,13 +503,11 @@ geo_linestring_to_array(PG_FUNCTION_ARGS)
     ereport(ERROR, (errcode (ERRCODE_INVALID_PARAMETER_VALUE),
                     errmsg("missing argument for geo_linestring")));
 
-
   ndims = 2;
   lbs[0] = 1;
   dims[0] = 2;
   lbs[1] = 1;
   dims[1] = line->npts;
-
 
   j = 0;
   for (i = 0; i < line->npts; i++)
@@ -402,7 +517,6 @@ geo_linestring_to_array(PG_FUNCTION_ARGS)
     j++;
   }
 
-
   for (i = 0 ; i < line->npts; i++)
   {
     datum_elems[j] = Float8GetDatum(line->coords[i].y);
@@ -410,9 +524,7 @@ geo_linestring_to_array(PG_FUNCTION_ARGS)
     j++;
   }
 
-
   get_typlenbyvalalign(FLOAT8OID, &typlen, &typbyval, &typalign);
-
 
   /* construct 1-D array*/
   // result_array = construct_array(datum_elems, line->npts*2, FLOAT8OID, typlen, typbyval, typalign);
@@ -420,9 +532,7 @@ geo_linestring_to_array(PG_FUNCTION_ARGS)
   /*construct ndims-D array*/
   result_array = construct_md_array(datum_elems, isnull, ndims, dims, lbs, FLOAT8OID, typlen, typbyval, typalign );
 
-
   PG_RETURN_ARRAYTYPE_P(result_array);
-
 }
 
 PG_FUNCTION_INFO_V1(geo_linestring_from_array);
@@ -430,7 +540,6 @@ PG_FUNCTION_INFO_V1(geo_linestring_from_array);
 Datum
 geo_linestring_from_array(PG_FUNCTION_ARGS)
 {
-
   ArrayType *array_x;
 
   ArrayType *array_y;
@@ -441,7 +550,6 @@ geo_linestring_from_array(PG_FUNCTION_ARGS)
   bool *nulls_x;
   bool *nulls_y;
   int count_x, count_y;
-
 
   int16 typlen;
 
@@ -506,7 +614,6 @@ geo_linestring_from_array(PG_FUNCTION_ARGS)
   line->npts = npts;
   line->srid = srid;
 
-
   for(int i = 0; i < npts; i++)
   {
     line->coords[i].x = DatumGetFloat8(datums_x[i]);
@@ -517,6 +624,5 @@ geo_linestring_from_array(PG_FUNCTION_ARGS)
   }
 
   PG_RETURN_GEOLINESTRING_TYPE_P(line);
-
 
 }
