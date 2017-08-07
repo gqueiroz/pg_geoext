@@ -80,7 +80,19 @@ extern Datum geo_box_out(PG_FUNCTION_ARGS);
 extern Datum geo_box_from_text(PG_FUNCTION_ARGS);
 extern Datum geo_box_to_str(PG_FUNCTION_ARGS);
 
+/*
+** support routines for the GiST access method for geo_box
+*/
+/*
+extern Datum geo_box_consistent(PG_FUNCTION_ARGS);
+extern Datum geo_box_union(PG_FUNCTION_ARGS);
+extern Datum geo_box_compress(PG_FUNCTION_ARGS);
+extern Datum geo_box_decompress(PG_FUNCTION_ARGS);
+extern Datum geo_box_penalty(PG_FUNCTION_ARGS);
+extern Datum geo_box_picksplit(PG_FUNCTION_ARGS);
+extern Datum geo_box_same(PG_FUNCTION_ARGS);
 
+*/
 
 
 /*
