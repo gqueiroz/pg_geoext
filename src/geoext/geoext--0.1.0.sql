@@ -270,6 +270,7 @@ CREATE OR REPLACE FUNCTION length(geo_linestring)
    AS 'MODULE_PATHNAME', 'geo_linestring_length'
    LANGUAGE C IMMUTABLE STRICT;
 
+
 CREATE FUNCTION linestring_to_array(geo_linestring)
    RETURNS float8[]
    AS 'MODULE_PATHNAME', 'geo_linestring_to_array'
@@ -280,9 +281,10 @@ CREATE OR REPLACE FUNCTION linestring_from_arrays(float8[], float8[])
    AS 'MODULE_PATHNAME', 'geo_linestring_from_array'
    LANGUAGE C STRICT;
 
-CREATE OR REPLACE FUNCTION build_rows_funcapi(IN integer, IN integer, OUT f1 integer, OUT f2 integer, OUT f3 integer)
+CREATE OR REPLACE FUNCTION linestring_intersection_points_v1(IN geo_linestring,
+   OUT x float8, OUT y float8)
    RETURNS SETOF record
-   AS 'MODULE_PATHNAME','geo_linestring_intersection_points_v1'
+   AS 'MODULE_PATHNAME', 'geo_linestring_intersection_points_v1'
    LANGUAGE C IMMUTABLE STRICT;
 
 
@@ -336,6 +338,51 @@ CREATE OR REPLACE FUNCTION box_from_text(cstring)
 CREATE OR REPLACE FUNCTION to_str(geo_box)
     RETURNS cstring
     AS 'MODULE_PATHNAME', 'geo_box_to_str'
+    LANGUAGE C IMMUTABLE STRICT;
+
+
+--
+-- Box Operators to interface to R-tree GiST
+--
+
+CREATE FUNCTION box_contain(geo_box, geo_box)
+    RETURNS bool
+    AS 'MODULE_PATHNAME', 'geo_box_contain'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION box_contained(geo_box, geo_box)
+    RETURNS bool
+    AS 'MODULE_PATHNAME', 'geo_box_contained'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION box_left(geo_box, geo_box)
+    RETURNS bool
+    AS 'MODULE_PATHNAME', 'geo_box_left'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION box_same(geo_box, geo_box)
+    RETURNS bool
+    AS 'MODULE_PATHNAME', 'geo_box_same'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION box_right(geo_box, geo_box)
+    RETURNS bool
+    AS 'MODULE_PATHNAME', 'geo_box_right'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION box_below(geo_box, geo_box)
+    RETURNS bool
+    AS 'MODULE_PATHNAME', 'geo_box_below'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION box_above(geo_box, geo_box)
+    RETURNS bool
+    AS 'MODULE_PATHNAME', 'geo_box_above'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION box_overlap(geo_box, geo_box)
+    RETURNS bool
+    AS 'MODULE_PATHNAME','geo_box_overlap'
     LANGUAGE C IMMUTABLE STRICT;
 --
 -- Register the geo_box Data Type

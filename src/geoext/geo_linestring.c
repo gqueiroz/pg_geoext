@@ -351,127 +351,85 @@ geo_linestring_length(PG_FUNCTION_ARGS)
 }
 
 
-/*return a row or composite-type value*/
-/*test int value return*/
-/*example from PostgreSQL documentation*/
 
-PG_FUNCTION_INFO_V1(geo_linestring_intersection_points);
+PG_FUNCTION_INFO_V1(geo_linestring_intersection_points_v1);
 
-Datum geo_linestring_intersection_points_v1(PG_FUNCTION_ARGS)
+Datum
+geo_linestring_intersection_points_v1(PG_FUNCTION_ARGS)
 {
-  elog(NOTICE, "geo_linestring_intersection_points_v1 called");
+    FuncCallContext     *funcctx;
+    int                  call_cntr;
+    int                  max_calls;
+    TupleDesc            tupdesc;
+    AttInMetadata       *attinmeta;
+    struct geo_linestring *line = PG_GETARG_GEOLINESTRING_TYPE_P(0);
+    // struct geo_linestring *line2;
 
-  FuncCallContext *funcctx; /*help control to save and remember state */
-  MemoryContext oldcontext, newcontext;
-  Datum result;
-  uint32 ct_call;
-  TupleDesc tupdesc;
-  AttInMetadata *attinmeta;
+    /* elog(NOTICE, "geo_linestring_intersection_points_v1 called");*/
 
-  // struct line_reverse_tuple_args *args; /*aux struct for save state*/
+    /* stuff done only on the first call of the function */
+    if (SRF_IS_FIRSTCALL())
+    {
+        MemoryContext   oldcontext;
 
-  // struct geo_linestring *line1;
-  // struct geo_linestring *line2;
+        /* create a function context for cross-call persistence */
+        funcctx = SRF_FIRSTCALL_INIT();
 
-  elog(NOTICE, "is being called called");
+        /* switch to memory context appropriate for multiple function calls */
+        oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
-  /* Determine if the function is being called for the first time.*/
-  if(SRF_IS_FIRSTCALL())
-  {
-    elog(NOTICE, "geo_linestring_intersection_points_v1 first called");
+        /* total number of tuples to be returned */
+        funcctx->max_calls = line->npts;
 
-    /* initialize the FuncCallContext */
-    funcctx = SRF_FIRSTCALL_INIT();
+        /* Build a tuple descriptor for our result type */
+        if (get_call_result_type(fcinfo, NULL, &tupdesc) != TYPEFUNC_COMPOSITE)
+            ereport(ERROR,
+                    (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+                     errmsg("function returning record called in context "
+                            "that cannot accept type record")));
 
-    /* switch to memory context appropriate for multiple function calls */
-    newcontext = funcctx->multi_call_memory_ctx;
-		oldcontext = MemoryContextSwitchTo(newcontext);
+        /*
+         * generate attribute metadata needed later to produce tuples from raw
+         * C strings
+         */
+        attinmeta = TupleDescGetAttInMetadata(tupdesc);
+        funcctx->attinmeta = attinmeta;
 
-    // line1 = PG_GETARG_GEOLINESTRING_TYPE_P(0);
-    // line2 = PG_GETARG_GEOLINESTRING_TYPE_P(1);
+        MemoryContextSwitchTo(oldcontext);
+    }
 
-    /* allocate and zero-fill struct for persisting extracted arguments*/
-    //args = palloc0(sizeof(struct line_reverse_tuple_args));
+    /* stuff done on every call of the function */
+    funcctx = SRF_PERCALL_SETUP();
 
-    //funcctx->user_fctx = args;
+    call_cntr = funcctx->call_cntr;
+    max_calls = funcctx->max_calls;
+    attinmeta = funcctx->attinmeta;
 
-    /* total number of tuples to be returned */
-    funcctx->max_calls = 3;
+    if (call_cntr < max_calls)    /* do when there is more left to send */
+    {
+        char       **values;
+        HeapTuple    tuple;
+        Datum        result;
 
-    /*
-		 * Build a tuple description for an
-		 */
-		/*tupdesc = RelationNameGetTupleDesc("line_intersection_pts");*/
-    /* Build a tuple descriptor for our result type */
-    if (get_call_result_type(fcinfo, NULL, &tupdesc) != TYPEFUNC_COMPOSITE)
-        ereport(ERROR,
-                (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-                 errmsg("function returning record called in context "
-                        "that cannot accept type record")));
+        values = (char **) palloc(2 * sizeof(char *));
+        values[0] = (char *) palloc(8 * sizeof(char));
+        values[1] = (char *) palloc(8 * sizeof(char));
 
+        snprintf(values[0], 8, "%g", line->coords[call_cntr].x);
+        snprintf(values[1], 8, "%g", line->coords[call_cntr].y);
 
-		/*
-		 * generate attribute metadata needed later to produce
-		 * tuples from raw C strings
-		 */
-		attinmeta = TupleDescGetAttInMetadata(tupdesc);
-		funcctx->attinmeta = attinmeta;
+        /* build a tuple */
+        tuple = BuildTupleFromCStrings(attinmeta, values);
 
+        /* make the tuple into a datum */
+        result = HeapTupleGetDatum(tuple);
 
-    /* restore memory context */
-    MemoryContextSwitchTo(oldcontext);
-
-    elog(NOTICE, "geo_linestring_intersection_points_v1 end first call");
-
-  }
-
-  funcctx = SRF_PERCALL_SETUP();
-
-
-  ct_call = funcctx->call_cntr;
-  attinmeta = funcctx->attinmeta;
-
-  elog(NOTICE, "funcapi others call");
-
-  if (ct_call < funcctx->max_calls)
-  {
-    HeapTuple tuple;
-    char       **values;
-
-    /*
-   * Prepare a values array for building the returned tuple.
-   * This should be an array of C strings which will
-   * be processed later by the type input functions.
-   */
-    values = (char **) palloc(3 * sizeof(char *));
-    values[0] = (char *) palloc(16 * sizeof(char));
-    values[1] = (char *) palloc(16 * sizeof(char));
-    values[2] = (char *) palloc(16 * sizeof(char));
-
-    snprintf(values[0], 16, "%d", 1 * PG_GETARG_INT32(1));
-    snprintf(values[1], 16, "%d", 2 * PG_GETARG_INT32(1));
-    snprintf(values[2], 16, "%d", 3 * PG_GETARG_INT32(1));
-
-    /* build a tuple */
-    tuple = BuildTupleFromCStrings(attinmeta, values);
-
-    /* make the tuple into a datum */
-    result = HeapTupleGetDatum(tuple);
-
-    /* clean up (this is not really necessary) */
-    pfree(values[0]);
-    pfree(values[1]);
-    pfree(values[2]);
-    pfree(values);
-
-    SRF_RETURN_NEXT(funcctx, result);
-  }
-
-  else
-  {
-    SRF_RETURN_DONE(funcctx);
-  }
-
+        SRF_RETURN_NEXT(funcctx, result);
+    }
+    else    /* do when there is no more left */
+    {
+        SRF_RETURN_DONE(funcctx);
+    }
 }
 
 
