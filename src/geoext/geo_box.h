@@ -73,7 +73,7 @@ struct geo_box
  *
  */
 
-/* Operações suportadas pelo tipo geo_box */
+/* Support operations for geo_box type */
 
 extern Datum geo_box_in(PG_FUNCTION_ARGS);
 extern Datum geo_box_out(PG_FUNCTION_ARGS);
@@ -81,8 +81,9 @@ extern Datum geo_box_from_text(PG_FUNCTION_ARGS);
 extern Datum geo_box_to_str(PG_FUNCTION_ARGS);
 
 /*
-** support routines for the GiST access method for geo_box
+** Support routines for the GiST access method for geo_box
 */
+
 /*
 extern Datum geo_box_consistent(PG_FUNCTION_ARGS);
 extern Datum geo_box_union(PG_FUNCTION_ARGS);
@@ -96,20 +97,20 @@ extern Datum geo_box_same(PG_FUNCTION_ARGS);
 
 
 /*
-*  GiST:  R-Tree index support
+*  GiST:  R-Tree operations support
 *
 */
 
-/*
 extern Datum geo_box_contain(PG_FUNCTION_ARGS);
 extern Datum geo_box_contained(PG_FUNCTION_ARGS);
 extern Datum geo_box_left(PG_FUNCTION_ARGS);
-extern Datum geo_box_same_op(PG_FUNCTION_ARGS);
+extern Datum geo_box_same(PG_FUNCTION_ARGS);
 extern Datum geo_box_right(PG_FUNCTION_ARGS);
 extern Datum geo_box_below(PG_FUNCTION_ARGS);
 extern Datum geo_box_above(PG_FUNCTION_ARGS);
 extern Datum geo_box_overlap(PG_FUNCTION_ARGS);
 
+/*
 extern Datum geo_box_overleft(PG_FUNCTION_ARGS);
 extern Datum geo_box_overright(PG_FUNCTION_ARGS);
 // extern Datum geo_box_overbelow(PG_FUNCTION_ARGS);

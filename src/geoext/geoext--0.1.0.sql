@@ -350,7 +350,40 @@ CREATE FUNCTION box_contain(geo_box, geo_box)
     AS 'MODULE_PATHNAME', 'geo_box_contain'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION box_contained(geo_box, geo_box)
+    RETURNS bool
+    AS 'MODULE_PATHNAME', 'geo_box_contained'
+    LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION box_left(geo_box, geo_box)
+    RETURNS bool
+    AS 'MODULE_PATHNAME', 'geo_box_left'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION box_same(geo_box, geo_box)
+    RETURNS bool
+    AS 'MODULE_PATHNAME', 'geo_box_same'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION box_right(geo_box, geo_box)
+    RETURNS bool
+    AS 'MODULE_PATHNAME', 'geo_box_right'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION box_below(geo_box, geo_box)
+    RETURNS bool
+    AS 'MODULE_PATHNAME', 'geo_box_below'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION box_above(geo_box, geo_box)
+    RETURNS bool
+    AS 'MODULE_PATHNAME', 'geo_box_above'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION box_overlap(geo_box, geo_box)
+    RETURNS bool
+    AS 'MODULE_PATHNAME','geo_box_overlap'
+    LANGUAGE C IMMUTABLE STRICT;
 --
 -- Register the geo_box Data Type
 --
