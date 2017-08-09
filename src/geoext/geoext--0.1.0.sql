@@ -474,7 +474,7 @@ CREATE OPERATOR <<|
   JOIN = areajoinsel
 );
 
--- 11 RTAboveStrategyNumber	      |>>	Is strictly above?
+-- 11 RTAboveStrategyNumber
 CREATE OPERATOR |>>
 (
   PROCEDURE = geo_box_above,
@@ -486,29 +486,51 @@ CREATE OPERATOR |>>
 );
 
 
-
-
 ---
 -- Define GiST methods
 ---
 
---ver
 CREATE OR REPLACE FUNCTION geo_box_consistent(internal, geo_box, smallint, oid, internal)
     RETURNS bool
     AS 'MODULE_PATHNAME', 'geo_box_consistent'
     LANGUAGE C STRICT;
 
-/*CREATE OR REPLACE FUNCTION geo_box_union(internal, internal)
+CREATE OR REPLACE FUNCTION geo_box_union(internal, internal)
     RETURNS geo_box
     AS 'MODULE_PATHNAME', 'geo_box_union'
+    LANGUAGE C STRICT;
+
+CREATE OR REPLACE FUNCTION geo_box_compress(internal)
+    RETURNS internal
+    AS 'MODULE_PATHNAME', 'geo_box_compress'
+    LANGUAGE C STRICT;
+
+CREATE OR REPLACE FUNCTION geo_box_decompress(internal)
+    RETURNS internal
+    AS 'MODULE_PATHNAME', 'geo_box_decompress'
+    LANGUAGE C STRICT;
+
+CREATE OR REPLACE FUNCTION geo_box_penalty(internal, internal, internal)
+    RETURNS internal
+    AS 'MODULE_PATHNAME', 'geo_box_penalty'
+    LANGUAGE C STRICT;
+
+/*CREATE OR REPLACE FUNCTION geo_box_picksplit(internal, internal)
+    RETURNS internal
+    AS 'MODULE_PATHNAME', 'geo_box_picksplit'
     LANGUAGE C STRICT;*/
+
+CREATE OR REPLACE FUNCTION g_box_same(geo_box, geo_box, internal)
+    RETURNS internal
+    AS 'MODULE_PATHNAME', 'g_box_same'
+    LANGUAGE C STRICT;
 
 
 --
 -- Create an operator class for geo_box to interface to R-tree index
 --
 
-CREATE OPERATOR CLASS gist_box_ops
+CREATE OPERATOR CLASS gist_gbox_ops
     DEFAULT FOR TYPE geo_box USING gist AS
         OPERATOR        1        <<  ,
       	OPERATOR        3        &&  ,
@@ -519,11 +541,11 @@ CREATE OPERATOR CLASS gist_box_ops
       	OPERATOR        10       <<| ,
       	OPERATOR        11       |>> ,
 
-        FUNCTION  1 geo_box_consistent(internal, geo_box, smallint, oid, internal)
-      	--FUNCTION	2	geo_box_union (internal, internal),
-      	--FUNCTION	3	geo_box_compress (internal),
-      	--FUNCTION	4	geo_box_decompress (internal),
-      	--FUNCTION	5	geo_box_penalty (internal, internal, internal),
+        FUNCTION  1 geo_box_consistent(internal, geo_box, smallint, oid, internal),
+      	FUNCTION	2	geo_box_union (internal, internal),
+      	FUNCTION	3	geo_box_compress (internal),
+      	FUNCTION	4	geo_box_decompress (internal),
+      	FUNCTION	5	geo_box_penalty (internal, internal, internal),
       	--FUNCTION	6	geo_box_picksplit (internal, internal),
-      	--FUNCTION	7	geo_box_same (cube, cube, internal),
+      	FUNCTION	7	g_box_same (geo_box, geo_box, internal);
       	--FUNCTION	8	geo_box_distance (internal, cube, smallint, oid, internal);

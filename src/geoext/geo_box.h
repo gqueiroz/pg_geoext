@@ -121,16 +121,55 @@ extern Datum geo_box_consistent(PG_FUNCTION_ARGS);
  *       this function generates a new index entry that represents all the given entries.
  */
 
-/*extern Datum geo_box_union(PG_FUNCTION_ARGS);*/
+extern Datum geo_box_union(PG_FUNCTION_ARGS);
+
 
 /*
-extern Datum geo_box_compress(PG_FUNCTION_ARGS);
-extern Datum geo_box_decompress(PG_FUNCTION_ARGS);
-extern Datum geo_box_penalty(PG_FUNCTION_ARGS);
-extern Datum geo_box_picksplit(PG_FUNCTION_ARGS);
-extern Datum geo_box_same(PG_FUNCTION_ARGS);
+ * \brief GiST Compress method for geo_box
+ * \note For geo_box do not do anything.
+ *       Converts the data item into a format suitable for physical storage in an index page.
+ */
 
-*/
+extern Datum geo_box_compress(PG_FUNCTION_ARGS);
+
+
+/*
+ * \brief GiST DeCompress method for geo_box
+ * \note For geo_box do not do anything. Just use the stored geo_box as is.
+ *
+ *       Converts the index representation of the data item into a format
+ *     that can be manipulated by the other GiST methods in the operator class
+ *
+ */
+
+extern Datum geo_box_decompress(PG_FUNCTION_ARGS);
+
+
+/*
+ * \brief GiST Penalty method for geo_box
+ * \note Returns a value indicating the "cost" of inserting the new entry into a particular branch of the tree.
+ *       Items will be inserted down the path of least penalty in the tree.
+ */
+
+extern Datum geo_box_penalty(PG_FUNCTION_ARGS);
+
+
+/*
+ * \brief GiST Picksplit method for geo_box
+ * \note Split an overflowing node into two new nodes.
+ */
+
+extern Datum geo_box_picksplit(PG_FUNCTION_ARGS);
+
+/*
+ * \brief GiST Same method for geo_box
+ * \note Equality method
+ *
+ */
+
+extern Datum g_box_same(PG_FUNCTION_ARGS);
+
+
 
 
 #endif  /* __GEOEXT_H__ */
