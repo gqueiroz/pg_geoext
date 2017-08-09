@@ -81,22 +81,6 @@ extern Datum geo_box_from_text(PG_FUNCTION_ARGS);
 extern Datum geo_box_to_str(PG_FUNCTION_ARGS);
 
 /*
-** Support routines for the GiST access method for geo_box
-*/
-
-/*
-extern Datum geo_box_consistent(PG_FUNCTION_ARGS);
-extern Datum geo_box_union(PG_FUNCTION_ARGS);
-extern Datum geo_box_compress(PG_FUNCTION_ARGS);
-extern Datum geo_box_decompress(PG_FUNCTION_ARGS);
-extern Datum geo_box_penalty(PG_FUNCTION_ARGS);
-extern Datum geo_box_picksplit(PG_FUNCTION_ARGS);
-extern Datum geo_box_same(PG_FUNCTION_ARGS);
-
-*/
-
-
-/*
 *  GiST:  R-Tree operations support
 *
 */
@@ -109,14 +93,42 @@ extern Datum geo_box_right(PG_FUNCTION_ARGS);
 extern Datum geo_box_below(PG_FUNCTION_ARGS);
 extern Datum geo_box_above(PG_FUNCTION_ARGS);
 extern Datum geo_box_overlap(PG_FUNCTION_ARGS);
+extern Datum geo_box_overleft(PG_FUNCTION_ARGS);
+/*
+extern Datum geo_box_overright(PG_FUNCTION_ARGS);
+extern Datum geo_box_overbelow(PG_FUNCTION_ARGS);
+extern Datum geo_box_overabove(PG_FUNCTION_ARGS);
+*/
+// extern Datum geo_box_below_eq(PG_FUNCTION_ARGS); // Is obsolete
+// extern Datum geo_box_above_eq(PG_FUNCTION_ARGS); // Is obsolete
+
+
+
+/* Support procedures for GiST */
 
 /*
-extern Datum geo_box_overleft(PG_FUNCTION_ARGS);
-extern Datum geo_box_overright(PG_FUNCTION_ARGS);
-// extern Datum geo_box_overbelow(PG_FUNCTION_ARGS);
-// extern Datum geo_box_overabove(PG_FUNCTION_ARGS);
-extern Datum geo_box_below_eq(PG_FUNCTION_ARGS); // Is obsolete
-extern Datum geo_box_above_eq(PG_FUNCTION_ARGS); // Is obsolete
+ * \brief The GiST Consistent method for geo_box
+ * \note Given an index entry p and a query value q,
+ *        this function determines whether the index entry is "consistent" with the query
+ */
+
+extern Datum geo_box_consistent(PG_FUNCTION_ARGS);
+
+
+/*
+ * \brief The GiST Union method for geo_box
+ * \note This method consolidates information in the tree. Given a set of entries,
+ *       this function generates a new index entry that represents all the given entries.
+ */
+
+/*extern Datum geo_box_union(PG_FUNCTION_ARGS);*/
+
+/*
+extern Datum geo_box_compress(PG_FUNCTION_ARGS);
+extern Datum geo_box_decompress(PG_FUNCTION_ARGS);
+extern Datum geo_box_penalty(PG_FUNCTION_ARGS);
+extern Datum geo_box_picksplit(PG_FUNCTION_ARGS);
+extern Datum geo_box_same(PG_FUNCTION_ARGS);
 
 */
 
