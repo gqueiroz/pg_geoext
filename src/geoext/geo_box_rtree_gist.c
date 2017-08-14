@@ -33,6 +33,7 @@
  *
  */
 
+
 /*
 * Base code: src/backend/access/gist/gistproc.c
 * R-Tree functionality for some of the built-in geometric data types
@@ -350,3 +351,27 @@ geo_box_penalty(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(penalty);
 
 }
+
+
+/*Uses linear algorithm from Ang & Tan */
+
+// PG_FUNCTION_INFO_V1(geo_box_picksplit);
+//
+// Datum
+// geo_box_picksplit(PG_FUNCTION_ARGS)
+// {
+//   bytea	   *entryvec = (bytea *) PG_GETARG_POINTER(0);
+//   GIST_SPLITVEC *v = (GIST_SPLITVEC *) PG_GETARG_POINTER(1); /*This is the Split Vector to be returned by the PickSplit method*/
+//   OffsetNumber maxoff; /* Number of nodes in the tree*/
+// 	OffsetNumber i;
+//   /*  rectangles that are nearer to a border than to its opposite */
+// 	OffsetNumber *listL, *listR, *listB, *listT;
+//   struct geo_box *unionL, *unionR, *unionB, *unionT;
+//   int	posL, posR,	posB,	posT;
+//
+//
+//   posL = posR = posB = posT = 0;
+//   maxoff = ((VARSIZE(entryvec) - VARHDRSZ) / sizeof(GISTENTRY)) - 1;
+//
+//
+// }

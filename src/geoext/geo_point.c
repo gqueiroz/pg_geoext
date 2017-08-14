@@ -1,7 +1,7 @@
 /*
   Copyright (C) 2017 National Institute For Space Research (INPE) - Brazil.
 
-  This file is part of pg_geoext, a simple PostgreSQL extension for 
+  This file is part of pg_geoext, a simple PostgreSQL extension for
   for teaching spatial database classes.
 
   pg_geoext is free software: you can redistribute it and/or modify
@@ -43,6 +43,7 @@
 /* PostgreSQL */
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
+#include <executor/executor.h>	/* for GetAttributeByName() */
 
 
 /* C Standard Library */
@@ -106,7 +107,7 @@ geo_point_out(PG_FUNCTION_ARGS)
   struct geo_point *pt = PG_GETARG_GEOPOINT_TYPE_P(0);
 
 /* alloc a buffer for hex-string plus a trailing '\0' */
-  char *hstr = palloc(GEOEXT_GEOPOINT_HEX_LEN + 1); 
+  char *hstr = palloc(GEOEXT_GEOPOINT_HEX_LEN + 1);
 
   /*elog(NOTICE, "geo_point_out called");*/
 
@@ -244,4 +245,30 @@ geo_point_distance(PG_FUNCTION_ARGS)
   dist = euclidian_distance(&(pt1->coord), &(pt2->coord));
 
   PG_RETURN_FLOAT8(dist);
+}
+
+
+
+PG_FUNCTION_INFO_V1(geo_point_same_position);
+
+Datum
+geo_point_same_position(PG_FUNCTION_ARGS)
+{
+  HeapTupleHeader t = PG_GETARG_HEAPTUPLEHEADER(0);
+  char *str = PG_GETARG_CSTRING(1);
+  struct geo_point *pt1 = PG_GETARG_GEOPOINT_TYPE_P(2);
+
+  struct geo_point *pt2;
+	bool		isnull;
+
+  /*elog(NOTICE, "geo_point_same_position CALL");*/
+
+  pt2 = DatumGetGeoPointTypeP(GetAttributeByName(t, str, &isnull));
+
+	if (isnull)
+		PG_RETURN_NULL();
+
+
+  PG_RETURN_BOOL(DatumGetBool(DirectFunctionCall2(geo_point_eq, PointerGetDatum(pt1), PointerGetDatum(pt2))));
+
 }

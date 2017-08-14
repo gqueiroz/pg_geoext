@@ -79,7 +79,10 @@ CREATE OR REPLACE FUNCTION distance(geo_point, geo_point)
     AS 'MODULE_PATHNAME', 'geo_point_distance'
     LANGUAGE C IMMUTABLE STRICT;
 
-
+CREATE OR REPLACE FUNCTION same_position(record,cstring, geo_point)
+    RETURNS boolean
+    AS 'MODULE_PATHNAME', 'geo_point_same_position'
+    LANGUAGE C;
 --
 -- Point Operators to interface to B-tree
 --

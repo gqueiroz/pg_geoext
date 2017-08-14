@@ -34,6 +34,13 @@ Gilberto Ribeiro de Queiroz at <gribeiro@dpi.inpe.br>.
 *
 */
 
+/*
+ * R-Tree Bibliography
+ * [1] A. Guttman. R-tree: a dynamic index structure for spatial searching.
+ *    Proceedings of the ACM SIGMOD Conference, pp 47-57, June 1984.
+ */
+
+
 #ifndef __GEOEXT_GEO_BOX_H__
 #define __GEOEXT_GEO_BOX_H__
 
