@@ -79,7 +79,10 @@ CREATE OR REPLACE FUNCTION distance(geo_point, geo_point)
     AS 'MODULE_PATHNAME', 'geo_point_distance'
     LANGUAGE C IMMUTABLE STRICT;
 
-
+CREATE OR REPLACE FUNCTION same_position(record,cstring, geo_point)
+    RETURNS boolean
+    AS 'MODULE_PATHNAME', 'geo_point_same_position'
+    LANGUAGE C;
 --
 -- Point Operators to interface to B-tree
 --
@@ -345,45 +348,46 @@ CREATE OR REPLACE FUNCTION to_str(geo_box)
 -- Box Operators to interface to R-tree GiST
 --
 
-CREATE FUNCTION box_contain(geo_box, geo_box)
+CREATE FUNCTION geo_box_contain(geo_box, geo_box)
     RETURNS bool
     AS 'MODULE_PATHNAME', 'geo_box_contain'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION box_contained(geo_box, geo_box)
+CREATE FUNCTION geo_box_contained(geo_box, geo_box)
     RETURNS bool
     AS 'MODULE_PATHNAME', 'geo_box_contained'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION box_left(geo_box, geo_box)
+CREATE FUNCTION geo_box_left(geo_box,geo_box)
     RETURNS bool
     AS 'MODULE_PATHNAME', 'geo_box_left'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION box_same(geo_box, geo_box)
+CREATE FUNCTION geo_box_same(geo_box, geo_box)
     RETURNS bool
     AS 'MODULE_PATHNAME', 'geo_box_same'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION box_right(geo_box, geo_box)
+CREATE FUNCTION geo_box_right(geo_box, geo_box)
     RETURNS bool
     AS 'MODULE_PATHNAME', 'geo_box_right'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION box_below(geo_box, geo_box)
+CREATE FUNCTION geo_box_below(geo_box, geo_box)
     RETURNS bool
     AS 'MODULE_PATHNAME', 'geo_box_below'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION box_above(geo_box, geo_box)
+CREATE FUNCTION geo_box_above(geo_box, geo_box)
     RETURNS bool
     AS 'MODULE_PATHNAME', 'geo_box_above'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION box_overlap(geo_box, geo_box)
+CREATE FUNCTION geo_box_overlap(geo_box, geo_box)
     RETURNS bool
     AS 'MODULE_PATHNAME','geo_box_overlap'
     LANGUAGE C IMMUTABLE STRICT;
+
 --
 -- Register the geo_box Data Type
 --
@@ -395,3 +399,156 @@ CREATE TYPE geo_box(
     internallength = 32,
     alignment = double
 );
+
+--
+-- Create operators to interface geo_box to R-tree index
+--
+
+--1 RTLeftStrategyNumber
+CREATE OPERATOR <<
+(
+  PROCEDURE = geo_box_left,
+  LEFTARG = geo_box,
+  RIGHTARG = geo_box,
+  RESTRICT = areasel,
+  JOIN = areajoinsel
+);
+
+-- 3 RTOverlapStrategyNumber
+CREATE OPERATOR &&
+(
+  PROCEDURE = geo_box_overlap,
+  LEFTARG = geo_box,
+  RIGHTARG = geo_box,
+  RESTRICT = areasel,
+  JOIN = areajoinsel
+);
+
+-- 5 RTRightStrategyNumber
+CREATE OPERATOR >>
+(
+  PROCEDURE = geo_box_right,
+  LEFTARG = geo_box,
+  RIGHTARG = geo_box,
+  --COMMUTATOR = << ,
+  RESTRICT = areasel,
+  JOIN = areajoinsel
+);
+
+-- 6 RTSameStrategyNumber
+CREATE OPERATOR ~=
+(
+  PROCEDURE = geo_box_same,
+  LEFTARG = geo_box,
+  RIGHTARG = geo_box,
+  --COMMUTATOR =  ,
+  RESTRICT = areasel,
+  JOIN = areajoinsel
+);
+
+-- 7 RTContainsStrategyNumber
+CREATE OPERATOR @>
+(
+  PROCEDURE = geo_box_contain,
+  LEFTARG = geo_box,
+  RIGHTARG = geo_box,
+  RESTRICT = areasel,
+  JOIN = areajoinsel
+);
+
+-- 8 RTContainedByStrategyNumber
+CREATE OPERATOR <@
+(
+  PROCEDURE = geo_box_contained,
+  LEFTARG = geo_box,
+  RIGHTARG = geo_box,
+  RESTRICT = areasel,
+  JOIN = areajoinsel
+);
+
+--10 RTBelowStrategyNumber
+CREATE OPERATOR <<|
+(
+  PROCEDURE = geo_box_below,
+  LEFTARG = geo_box,
+  RIGHTARG = geo_box,
+  COMMUTATOR = |>>,
+  RESTRICT = areasel,
+  JOIN = areajoinsel
+);
+
+-- 11 RTAboveStrategyNumber
+CREATE OPERATOR |>>
+(
+  PROCEDURE = geo_box_above,
+  LEFTARG = geo_box,
+  RIGHTARG = geo_box,
+  COMMUTATOR = <<| ,
+  RESTRICT = areasel,
+  JOIN = areajoinsel
+);
+
+
+---
+-- Define GiST methods
+---
+
+CREATE OR REPLACE FUNCTION geo_box_consistent(internal, geo_box, smallint, oid, internal)
+    RETURNS bool
+    AS 'MODULE_PATHNAME', 'geo_box_consistent'
+    LANGUAGE C STRICT;
+
+CREATE OR REPLACE FUNCTION geo_box_union(internal, internal)
+    RETURNS geo_box
+    AS 'MODULE_PATHNAME', 'geo_box_union'
+    LANGUAGE C STRICT;
+
+CREATE OR REPLACE FUNCTION geo_box_compress(internal)
+    RETURNS internal
+    AS 'MODULE_PATHNAME', 'geo_box_compress'
+    LANGUAGE C STRICT;
+
+CREATE OR REPLACE FUNCTION geo_box_decompress(internal)
+    RETURNS internal
+    AS 'MODULE_PATHNAME', 'geo_box_decompress'
+    LANGUAGE C STRICT;
+
+CREATE OR REPLACE FUNCTION geo_box_penalty(internal, internal, internal)
+    RETURNS internal
+    AS 'MODULE_PATHNAME', 'geo_box_penalty'
+    LANGUAGE C STRICT;
+
+/*CREATE OR REPLACE FUNCTION geo_box_picksplit(internal, internal)
+    RETURNS internal
+    AS 'MODULE_PATHNAME', 'geo_box_picksplit'
+    LANGUAGE C STRICT;*/
+
+CREATE OR REPLACE FUNCTION g_box_same(geo_box, geo_box, internal)
+    RETURNS internal
+    AS 'MODULE_PATHNAME', 'g_box_same'
+    LANGUAGE C STRICT;
+
+
+--
+-- Create an operator class for geo_box to interface to R-tree index
+--
+
+CREATE OPERATOR CLASS gist_gbox_ops
+    DEFAULT FOR TYPE geo_box USING gist AS
+        OPERATOR        1        <<  ,
+      	OPERATOR        3        &&  ,
+      	OPERATOR        5        >>	 ,
+        OPERATOR	      6	       ~=  ,
+        OPERATOR        7        @>  ,
+        OPERATOR        8        <@  ,
+      	OPERATOR        10       <<| ,
+      	OPERATOR        11       |>> ,
+
+        FUNCTION  1 geo_box_consistent(internal, geo_box, smallint, oid, internal),
+      	FUNCTION	2	geo_box_union (internal, internal),
+      	FUNCTION	3	geo_box_compress (internal),
+      	FUNCTION	4	geo_box_decompress (internal),
+      	FUNCTION	5	geo_box_penalty (internal, internal, internal),
+      	--FUNCTION	6	geo_box_picksplit (internal, internal),
+      	FUNCTION	7	g_box_same (geo_box, geo_box, internal);
+      	--FUNCTION	8	geo_box_distance (internal, cube, smallint, oid, internal);

@@ -35,24 +35,20 @@
 
 /* GeoExtension */
 #include "geo_box.h"
-#include "algorithms.h"
-
 
 /* PostgreSQL */
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
 
-
 /* C Standard Library */
-#include <assert.h>
 #include <ctype.h>
 #include <float.h>
 #include <limits.h>
 #include <math.h>
 #include <string.h>
 
-inline
-bool geo_box_cmp_internal_overlap(struct geo_box *first, struct geo_box *second)
+static inline bool
+geo_box_cmp_internal_overlap(struct geo_box *first, struct geo_box *second)
 {
   return (DatumGetBool(DirectFunctionCall2(geo_box_left, PointerGetDatum(first), PointerGetDatum(second))) ||
           DatumGetBool(DirectFunctionCall2(geo_box_right, PointerGetDatum(first), PointerGetDatum(second))) ||
@@ -188,3 +184,20 @@ geo_box_overlap(PG_FUNCTION_ARGS)
 
   PG_RETURN_BOOL(!geo_box_cmp_internal_overlap(first, second));
 }
+
+/*
+PG_FUNCTION_INFO_V1(geo_box_overleft);
+
+Datum
+geo_box_overleft(PG_FUNCTION_ARGS)
+{
+  struct geo_box *first = PG_GETARG_GEOBOX_TYPE_P(0);
+  struct geo_box *second = PG_GETARG_GEOBOX_TYPE_P(1);
+
+  if(DatumGetBool(DirectFunctionCall2(geo_box_overlap, PointerGetDatum(first), PointerGetDatum(second))))
+  {
+
+  }
+}
+
+*/

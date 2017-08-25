@@ -96,12 +96,13 @@ SELECT (linestring_to_array(linestring_from_text('LINESTRING(11 11, 12 12, 13 13
 SELECT to_str(linestring_from_arrays(ARRAY[11,12,13,14,15,11], ARRAY[11,12,13,14,15,11]));
 
 -- teste for operations geo_box --
-SELECT box_contain(box_from_text('BOX (7 7, 1 2)'), box_from_text('BOX (6 6, 2 2)'));
-SELECT box_contain(box_from_text('BOX (15 7, 1 2)'), box_from_text('BOX (14 7, 10 4)'));
-SELECT box_contained(box_from_text('BOX (1 2, 2 1)'), box_from_text('BOX (3 2, 1 0)'));
-SELECT box_contained(box_from_text('BOX (2 2, 0 2)'), box_from_text('BOX (6 6, 3 3)'));
-SELECT box_left(box_from_text('BOX (5 4, 2 0)'), box_from_text('BOX (-2 5, -4 2)'));
-SELECT box_left(box_from_text('BOX (-1 2, -4 0)'),box_from_text('BOX (2 3, 1 0)'));
-SELECT box_right(box_from_text('BOX (5 4, 2 0)'),box_from_text('BOX (-2 5, -4 2)'));
-SELECT box_overlap(box_from_text('BOX (4 3, 1 1)'),box_from_text('BOX (2 2, -1 -1)'));
-SELECT box_overlap(box_from_text('BOX (15 14, 20 10)'),box_from_text('BOX (2 2, 1 1)'));
+SELECT geo_box_contain(box_from_text('BOX (7 7, 1 2)'), box_from_text('BOX (6 6, 2 2)'));
+SELECT geo_box_contain(box_from_text('BOX (15 7, 1 2)'), box_from_text('BOX (14 7, 10 4)'));
+SELECT geo_box_contained(box_from_text('BOX (1 2, 2 1)'), box_from_text('BOX (3 2, 1 0)'));
+SELECT geo_box_contained(box_from_text('BOX (2 2, 0 2)'), box_from_text('BOX (6 6, 3 3)'));
+SELECT geo_box_left(box_from_text('BOX (5 4, 2 0)'), box_from_text('BOX (-2 5, -4 2)'));
+SELECT geo_box_left(box_from_text('BOX (-1 2, -4 0)'),box_from_text('BOX (2 3, 1 0)'));
+SELECT geo_box_right(box_from_text('BOX (5 4, 2 0)'),box_from_text('BOX (-2 5, -4 2)'));
+SELECT geo_box_overlap(box_from_text('BOX (4 3, 1 1)'),box_from_text('BOX (2 2, -1 -1)'));
+SELECT geo_box_overlap(box_from_text('BOX (15 14, 20 10)'),box_from_text('BOX (2 2, 1 1)'));
+SELECT box_from_text('BOX (7 7, 1 2)') @> box_from_text('BOX (6 6, 2 2)');
