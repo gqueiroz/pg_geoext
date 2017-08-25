@@ -29,7 +29,7 @@ DECLARE
     pt geo_point;
 BEGIN
     RAISE NOTICE 'Computando % pontos aleatórios...', npts;
-    
+
     FOR i IN 1..npts LOOP
         longitude := 360.0 * random() - 180.0;
         latitude := 180.0 * random() - 90.0;
@@ -86,3 +86,11 @@ INSERT INTO t2 VALUES(linestring_from_text('LINESTRING(0 0, 10 10)')),
 SELECT * FROM t2;
 
 SELECT to_str(c) FROM t2;
+
+SELECT linestring_to_array(linestring_from_text('LINESTRING(11 11, 12 12, 13 13, 14 14, 15 15, 11 11)'));
+
+SELECT unnest((linestring_to_array(linestring_from_text('LINESTRING(11 11, 12 12, 13 13, 14 14, 15 15, 11 11)')))[1:1]);
+
+SELECT (linestring_to_array(linestring_from_text('LINESTRING(11 11, 12 12, 13 13, 14 14, 15 15, 11 11)')))[2:2];
+
+SELECT to_str(linestring_from_arrays(ARRAY[11,12,13,14,15,11], ARRAY[11,12,13,14,15,11]));

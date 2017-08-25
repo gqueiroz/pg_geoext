@@ -193,7 +193,7 @@ CREATE OPERATOR >= (
     COMMUTATOR = <= ,
     NEGATOR = <,
     RESTRICT = scalarltsel,
-    JOIN = scalarltjoinsel 
+    JOIN = scalarltjoinsel
 );
 
 
@@ -270,11 +270,20 @@ CREATE OR REPLACE FUNCTION length(geo_linestring)
    AS 'MODULE_PATHNAME', 'geo_linestring_length'
    LANGUAGE C IMMUTABLE STRICT;
 
-
-CREATE FUNCTION make_array(anyelement)
-   RETURNS anyarray
-   AS 'MODULE_PATHNAME', 'geo_linestring_intersection_points'
+CREATE FUNCTION linestring_to_array(geo_linestring)
+   RETURNS float8[]
+   AS 'MODULE_PATHNAME', 'geo_linestring_to_array'
    LANGUAGE C IMMUTABLE;
+
+CREATE OR REPLACE FUNCTION linestring_from_arrays(float8[], float8[])
+   RETURNS geo_linestring
+   AS 'MODULE_PATHNAME', 'geo_linestring_from_array'
+   LANGUAGE C STRICT;
+
+CREATE OR REPLACE FUNCTION build_rows_funcapi(IN integer, IN integer, OUT f1 integer, OUT f2 integer, OUT f3 integer)
+   RETURNS SETOF record
+   AS 'MODULE_PATHNAME','geo_linestring_intersection_points_v1'
+   LANGUAGE C IMMUTABLE STRICT;
 
 
 --
@@ -288,5 +297,54 @@ CREATE TYPE geo_linestring
     send = geo_linestring_send,
     internallength = variable,
     storage = extended,
+    alignment = double
+);
+
+----------------------------------------
+----------------------------------------
+-- Introduces the geo_box Data Type --
+----------------------------------------
+----------------------------------------
+
+--
+-- Drop geo_box type if it exists and forward its declaration
+--
+DROP TYPE IF EXISTS geo_box;
+CREATE TYPE geo_box;
+
+--
+-- Box Input/Output Functions
+--
+CREATE OR REPLACE FUNCTION geo_box_in(cstring)
+    RETURNS geo_box
+    AS 'MODULE_PATHNAME', 'geo_box_in'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION geo_box_out(geo_box)
+    RETURNS cstring
+    AS 'MODULE_PATHNAME', 'geo_box_out'
+    LANGUAGE C IMMUTABLE STRICT;
+
+--
+-- Box Operators
+--
+CREATE OR REPLACE FUNCTION box_from_text(cstring)
+    RETURNS geo_box
+    AS 'MODULE_PATHNAME', 'geo_box_from_text'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION to_str(geo_box)
+    RETURNS cstring
+    AS 'MODULE_PATHNAME', 'geo_box_to_str'
+    LANGUAGE C IMMUTABLE STRICT;
+--
+-- Register the geo_box Data Type
+--
+CREATE TYPE geo_box(
+    input = geo_box_in,
+    output = geo_box_out,
+    --receive = geo_box_recv,
+    --send = geo_box_send,
+    internallength = 32,
     alignment = double
 );
