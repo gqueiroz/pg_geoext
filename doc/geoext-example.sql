@@ -106,3 +106,8 @@ SELECT geo_box_right(box_from_text('BOX (5 4, 2 0)'),box_from_text('BOX (-2 5, -
 SELECT geo_box_overlap(box_from_text('BOX (4 3, 1 1)'),box_from_text('BOX (2 2, -1 -1)'));
 SELECT geo_box_overlap(box_from_text('BOX (15 14, 20 10)'),box_from_text('BOX (2 2, 1 1)'));
 SELECT box_from_text('BOX (7 7, 1 2)') @> box_from_text('BOX (6 6, 2 2)');
+
+
+SELECT buoy_id, same_position(buoy,'geom', point_from_text('POINT(37.3168034143746 30.5994637720287)')) AS same FROM buoy;
+SELECT linestring_intersection_points_v1(linestring_from_text('LINESTRING(11 11, 12 12, 13 13, 14 14, 15 15, 11 11)'));
+SELECT array_trajectory_agg(time, position) as trajec FROM boia;

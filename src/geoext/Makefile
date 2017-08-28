@@ -25,7 +25,7 @@ MODULE_big = geoext
 
 # As our extension uses multiple files, we have to
 # set OBJS
-OBJS = algorithms.o geo_box.o geo_box_op.o geo_box_rtree_gist.o geo_linestring.o geo_point.o geo_point_btree.o geo_polygon.o geoext.o hexutils.o wkt.o
+OBJS = algorithms.o trajectory.o geo_box.o geo_box_op.o geo_box_rtree_gist.o geo_linestring.o geo_point.o geo_point_btree.o geo_polygon.o geoext.o hexutils.o wkt.o
 
 # The extension name: geoext
 EXTENSION = geoext

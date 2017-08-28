@@ -79,7 +79,7 @@ CREATE OR REPLACE FUNCTION distance(geo_point, geo_point)
     AS 'MODULE_PATHNAME', 'geo_point_distance'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE OR REPLACE FUNCTION same_position(record,cstring, geo_point)
+CREATE OR REPLACE FUNCTION same_position(record, cstring, geo_point)
     RETURNS boolean
     AS 'MODULE_PATHNAME', 'geo_point_same_position'
     LANGUAGE C;
@@ -304,6 +304,67 @@ CREATE TYPE geo_linestring
     storage = extended,
     alignment = double
 );
+
+----------------------------------------
+----------------------------------------
+-- Introduces the trajectory_elem Data Type --
+----------------------------------------
+----------------------------------------
+
+
+DROP TYPE IF EXISTS geo_trajc_elem;
+CREATE TYPE geo_trajc_elem;
+
+
+--
+-- Trajectory Input/Output Functions
+--
+CREATE OR REPLACE FUNCTION trajectory_elem_in(cstring)
+    RETURNS geo_trajc_elem
+    AS 'MODULE_PATHNAME', 'trajectory_elem_in'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION trajectory_elem_out(geo_trajc_elem)
+    RETURNS cstring
+    AS 'MODULE_PATHNAME', 'trajectory_elem_out'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION get_trajectory_elem(timestamp, geo_point)
+    RETURNS geo_trajc_elem
+    AS 'MODULE_PATHNAME','get_trajectory_elem'
+    LANGUAGE C IMMUTABLE STRICT;
+
+
+--
+-- Register the geo_trajc_elem Data Type
+--
+CREATE TYPE geo_trajc_elem(
+    input = trajectory_elem_in,
+    output = trajectory_elem_out,
+    --receive = ,
+    -- send = ,
+    internallength = 32,
+    alignment = double
+);
+
+CREATE OR REPLACE FUNCTION trajectory_to_array(geo_trajc_elem[], timestamp, geo_point)
+    RETURNS geo_trajc_elem[]
+    AS 'MODULE_PATHNAME','trajectory_to_array'
+    LANGUAGE C IMMUTABLE STRICT;
+
+/*CREATE OR REPLACE FUNCTION trajectory_to_array_final(timestamp[])
+    RETURNS geo_trajc_elem[]
+    AS 'MODULE_PATHNAME', 'trajectory_to_array_final'
+    LANGUAGE C IMMUTABLE STRICT;*/
+
+CREATE AGGREGATE array_trajectory_agg(timestamp, geo_point)
+(
+  SFUNC = trajectory_to_array,
+  STYPE = geo_trajc_elem[],
+  --FINALFUNC = time_to_array_final
+  initcond = '{}'
+);
+
 
 ----------------------------------------
 ----------------------------------------
