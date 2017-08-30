@@ -55,9 +55,9 @@ Gilberto Ribeiro de Queiroz at <gribeiro@dpi.inpe.br>.
 
 /*
   An Hex-String encoding a geo_trajc_elem must have at least:
-  - srid: sizeof(int32)
-  - npts: sizeof(int32)
-  - 2 coordinates: 2 * sizeof(struct coord2d)
+  - srid: sizeof(int32) ?
+  - time: sizeof(Timestamp)
+  - 2 coordinates: sizeof(struct coord2d)
   Note that int hex we will have the double of bytes!
  */
 #define GEOEXT_MIN_GEOTRAJCE_HEX_LEN \
@@ -87,7 +87,7 @@ trajectory_elem_in(PG_FUNCTION_ARGS)
   Timestamp time_elem = 0;
 
 
-  elog(NOTICE, "trajectory_elem_in CALL for: %s", str);
+  /*elog(NOTICE, "trajectory_elem_in CALL for: %s", str);*/
 
   if (hstr_size < GEOEXT_MIN_GEOTRAJCE_HEX_LEN)
     ereport(ERROR,
@@ -134,11 +134,11 @@ trajectory_elem_out(PG_FUNCTION_ARGS)
 
   timestamp = DatumGetCString(DirectFunctionCall1(timestamp_out, PointerGetDatum(traje->time_elem)));
 
-  elog(NOTICE, "trajectory_elem_out timestamp: %s", timestamp);
+  /*elog(NOTICE, "trajectory_elem_out timestamp: %s", timestamp);*/
 
   point = DatumGetCString(DirectFunctionCall1(geo_point_out, PointerGetDatum(&(traje->point_elem))));
 
-  elog(NOTICE, "trajectory_elem_out point point: %s", point);
+  /*elog(NOTICE, "trajectory_elem_out point point: %s", point);*/
 
   appendStringInfo(&final_hex, "%s", timestamp);
   appendStringInfo(&final_hex, "%s", point);
@@ -161,7 +161,7 @@ get_trajectory_elem(PG_FUNCTION_ARGS)
 
   struct geo_trajc_elem *traje = (struct geo_trajc_elem *)palloc(sizeof(struct geo_trajc_elem));
 
-  elog(NOTICE,"get_trajectory_elem CALL ");
+  /*elog(NOTICE,"get_trajectory_elem CALL ");*/
 
   /*fazer as verificacoes*/
 
@@ -173,10 +173,23 @@ get_trajectory_elem(PG_FUNCTION_ARGS)
   traje->point_elem.srid = pt->srid;
   traje->point_elem.dummy = 0;
 
-  elog(NOTICE,"get_trajectory_elem getall ");
+  /*elog(NOTICE,"get_trajectory_elem getall ");*/
 
   PG_RETURN_GEOTRAJE_TYPE_P(traje);
 };
+
+PG_FUNCTION_INFO_V1(tst_trajectory);
+
+Datum
+tst_trajectory(PG_FUNCTION_ARGS)
+{
+  /*funcao final da agregacao*/
+  /*recebe um array de trajectory_elem*/
+  /*criar o tipo trajetoria */
+  /*ordena o array*/
+  /*criar line*/
+  /*pega o tempo final e inicial*/
+}
 
 PG_FUNCTION_INFO_V1(trajectory_to_array);
 
@@ -184,12 +197,13 @@ Datum
 trajectory_to_array(PG_FUNCTION_ARGS)
 {
 
-  /*elog(NOTICE, "trajectory_to_array CALL");*/
+  elog(NOTICE, "trajectory_to_array CALL");
 
-  /* Timestamp*/
+  /* Agregate array result*/
   ArrayType *result_array;
   struct geo_trajc_elem *traje = (struct geo_trajc_elem *)palloc(sizeof(struct geo_trajc_elem));
 
+  /*get args*/
   Timestamp time_el = PG_GETARG_TIMESTAMP(1);
   struct geo_point *pt = PG_GETARG_GEOPOINT_TYPE_P(2);
 
@@ -201,20 +215,17 @@ trajectory_to_array(PG_FUNCTION_ARGS)
 
   const char *aux1 = "geo_trajc_elem";
   TypeName *typname;
-
-
   typname = typeStringToTypeName(aux1);
 
+  /*creating trajectory_elem type*/
   traje = DatumGetGeoTrajETypeP(DirectFunctionCall2(get_trajectory_elem, PointerGetDatum(time_el), PointerGetDatum(pt)));
-
+  /*pass to datum for using in ArrayType*/
   datum_element = PointerGetDatum(traje);
-
 
   /*from parser/parse_type.h*/
   Oid element_type = typenameTypeId(NULL, typname);
 
   /*elog(NOTICE, "get element_type %d", element_type);*/
-
 
   if (!OidIsValid(element_type))
      elog(ERROR, "could not determine data type of geo_trajc_elem input");
@@ -224,13 +235,18 @@ trajectory_to_array(PG_FUNCTION_ARGS)
 
 
   bool isnull = PG_ARGISNULL(0);
+
+  // float8 isnull = PG_GETARG_FLOAT8(0);
+
+  elog(NOTICE, "isnull %d", isnull);
+
+
   // If argument 0 (agg_state) is null this is the first value provided to the aggregate.
   if(isnull) {
 
+    elog(NOTICE, "eh null");
     result_array = construct_array(&datum_element, 1, element_type, typlen, typbyval, typalign);
-
     /*elog(NOTICE, "construct_array ok");*/
-
     PG_RETURN_ARRAYTYPE_P(result_array);
 
   }
@@ -239,10 +255,8 @@ trajectory_to_array(PG_FUNCTION_ARGS)
   ArrayType *aux;
   /*elog(NOTICE, "dims array_in %d", ARR_NDIM(array_in));*/
 
-
   aux = construct_array(&datum_element, 1, element_type, typlen, typbyval, typalign);
   /*elog(NOTICE, "construct_array ok");*/
-
 
   result_array = DatumGetArrayTypeP(DirectFunctionCall2(array_cat, PointerGetDatum(array_in), PointerGetDatum(aux)));
 
@@ -251,6 +265,31 @@ trajectory_to_array(PG_FUNCTION_ARGS)
 
   PG_RETURN_ARRAYTYPE_P(result_array);
 
+}
 
+PG_FUNCTION_INFO_V1(trajectory_to_array_final);
 
+Datum
+trajectory_to_array_final(PG_FUNCTION_ARGS)
+{
+  elog(NOTICE, "trajectory_to_array_final CALL");
+
+  ArrayType *array_in;
+  ArrayType *array_out_order;
+
+  /* variables for "deconstructed" array*/
+  Datum *datums_time;
+
+  bool *nulls_time;
+  int count_time;
+
+  int16 typlen;
+  bool typbyval;
+  char typalign;
+
+  array_in = PG_GETARG_ARRAYTYPE_P(0);
+
+  elog(NOTICE, "get argument");
+
+  PG_RETURN_ARRAYTYPE_P(array_in);
 }
