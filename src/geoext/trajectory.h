@@ -76,6 +76,6 @@ extern Datum trajectory_elem_out(PG_FUNCTION_ARGS);
 extern Datum get_trajectory_elem(PG_FUNCTION_ARGS);
 
 extern Datum trajectory_to_array(PG_FUNCTION_ARGS);
-// extern Datum trajectory_to_array_final(PG_FUNCTION_ARGS);
+extern Datum trajectory_to_array_final(PG_FUNCTION_ARGS);
 
 #endif  /* __GEOEXT_H__ */

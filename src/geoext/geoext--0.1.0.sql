@@ -352,17 +352,21 @@ CREATE OR REPLACE FUNCTION trajectory_to_array(geo_trajc_elem[], timestamp, geo_
     AS 'MODULE_PATHNAME','trajectory_to_array'
     LANGUAGE C IMMUTABLE STRICT;
 
-/*CREATE OR REPLACE FUNCTION trajectory_to_array_final(timestamp[])
+CREATE OR REPLACE FUNCTION trajectory_to_array_final(geo_trajc_elem[])
     RETURNS geo_trajc_elem[]
     AS 'MODULE_PATHNAME', 'trajectory_to_array_final'
-    LANGUAGE C IMMUTABLE STRICT;*/
+    LANGUAGE C IMMUTABLE STRICT;
+
+-- just for test
+-- deveria dar um erro
+-- esta funcao nao eh chamada
 
 CREATE AGGREGATE array_trajectory_agg(timestamp, geo_point)
 (
   SFUNC = trajectory_to_array,
   STYPE = geo_trajc_elem[],
-  --FINALFUNC = time_to_array_final
-  initcond = '{}'
+  initcond = '{}',
+  FINALFUNC = trajectory_to_array_final
 );
 
 
