@@ -122,6 +122,7 @@ trajectory_elem_out(PG_FUNCTION_ARGS)
   int size = sizeof(Timestamp) + sizeof(struct geo_point);
 
   char *hstr = palloc(2 * size + 1);
+
   char *cp = NULL;
   /*elog(NOTICE, "trajectory_elem_out CALL ");*/
 
@@ -129,11 +130,12 @@ trajectory_elem_out(PG_FUNCTION_ARGS)
     ereport(ERROR, (errcode (ERRCODE_INVALID_PARAMETER_VALUE),
                     errmsg("missing argument for trajectory_elem_out")));
 
-
+  /* get the Timestamp from the hex-string and advance the hstr pointer */
   binary2hex((char*)(&traje->time_elem), sizeof(Timestamp), hstr);
 
   cp = hstr + 2 * sizeof(Timestamp);
 
+  /*read the geo_point from the hex-string*/
   binary2hex((char*)(&traje->point_elem), sizeof(struct geo_point), cp);
 
   PG_RETURN_CSTRING(hstr);
