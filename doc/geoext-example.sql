@@ -110,4 +110,27 @@ SELECT box_from_text('BOX (7 7, 1 2)') @> box_from_text('BOX (6 6, 2 2)');
 
 SELECT buoy_id, same_position(buoy,'geom', point_from_text('POINT(37.3168034143746 30.5994637720287)')) AS same FROM buoy;
 SELECT linestring_intersection_points_v1(linestring_from_text('LINESTRING(11 11, 12 12, 13 13, 14 14, 15 15, 11 11)'));
-SELECT array_trajectory_agg(time, position) as trajec FROM boia;
+--SELECT array_trajectory_agg(time, position) as trajec FROM boia;
+
+
+CREATE TABLE buoy_obs(
+ id SERIAL PRIMARY KEY,
+ buoy_id INTEGER,
+ time TIMESTAMP,
+ position geo_point
+);
+
+INSERT INTO buoy_obs (buoy_id,time,position) VALUES (1, '2015-05-18 10:00:00'::timestamp, point_from_text('POINT(33 22)') );
+INSERT INTO buoy_obs (buoy_id,time,position) VALUES (1, '2015-05-18 14:00:00'::timestamp, point_from_text('POINT(37 30)') );
+INSERT INTO buoy_obs (buoy_id,time,position) VALUES (1, '2015-05-18 15:00:00'::timestamp, point_from_text('POINT(37 31)') );
+INSERT INTO buoy_obs (buoy_id,time,position) VALUES (1, '2015-05-18 16:00:00'::timestamp, point_from_text('POINT(38 32)') );
+INSERT INTO buoy_obs (buoy_id,time,position) VALUES (2, '2015-05-19 21:00:00'::timestamp, point_from_text('POINT(37 30)') );
+INSERT INTO buoy_obs (buoy_id,time,position) VALUES (2, '2015-05-19 22:00:00'::timestamp, point_from_text('POINT(37 32)') );
+INSERT INTO buoy_obs (buoy_id,time,position) VALUES (2, '2015-05-19 23:00:00'::timestamp, point_from_text('POINT(38 33)') );
+INSERT INTO buoy_obs (buoy_id,time,position) VALUES (3, '2015-05-18 13:00:00'::timestamp, point_from_text('POINT(30 20)') );
+INSERT INTO buoy_obs (buoy_id,time,position) VALUES (3, '2015-05-18 12:00:00'::timestamp, point_from_text('POINT(31 20)') );
+INSERT INTO buoy_obs (buoy_id,time,position) VALUES (1, '2015-05-18 11:00:00'::timestamp, point_from_text('POINT(32 21)') );
+
+
+SELECT array_trajectory_agg(time, position) as trajec FROM buoy_obs;
+SELECT buoy_id, array_trajectory_agg(time, position) FROM buoy_obs GROUP BY buoy_id;
