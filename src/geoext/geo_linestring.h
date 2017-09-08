@@ -53,9 +53,9 @@
 struct geo_linestring
 {
   int32 vl_len_;  /* Varlena header.                    */
+  int32 dummy;    /* Padding to make it double aligned. */
   int32 srid;     /* The Spatial Reference System ID.   */
   int32 npts;     /* Number of points in the polygon.   */
-  int32 dummy;    /* Padding to make it double aligned. */
   struct coord2d coords[FLEXIBLE_ARRAY_MEMBER];   /* The array of polygon vertices.     */
 };
 
@@ -99,10 +99,11 @@ extern Datum geo_linestring_to_str(PG_FUNCTION_ARGS);
 extern Datum geo_linestring_is_closed(PG_FUNCTION_ARGS);
 extern Datum geo_linestring_length(PG_FUNCTION_ARGS);
 
+extern Datum geo_linestring_boundary_points(PG_FUNCTION_ARGS);
 
-extern Datum geo_linestring_to_array(PG_FUNCTION_ARGS);
-extern Datum geo_linestring_from_array(PG_FUNCTION_ARGS);
-extern Datum geo_linestring_intersection_points_v1(PG_FUNCTION_ARGS);
+extern Datum geo_linestring_make(PG_FUNCTION_ARGS);
+
+extern Datum geo_linestring_intersection(PG_FUNCTION_ARGS);
 
 
 #endif  /* __GEOEXT_GEO_LINESTRING_H__ */
