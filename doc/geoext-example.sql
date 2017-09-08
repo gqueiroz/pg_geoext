@@ -95,6 +95,20 @@ SELECT (linestring_to_array(linestring_from_text('LINESTRING(11 11, 12 12, 13 13
 
 SELECT to_str(linestring_from_arrays(ARRAY[11,12,13,14,15,11], ARRAY[11,12,13,14,15,11]));
 
+------------
+CREATE TABLE tpoly
+(
+  geom geo_polygon
+);
+
+INSERT INTO tpoly VALUES(polygon_from_text('POLYGON((0 0, 10 0, 10 10, 0 10, 00))')),
+                        (polygon_from_text('POLYGON((20 0, 30 0, 25 10, 20 0))'));
+
+SELECT * FROM t2;
+
+SELECT to_str(c) FROM t2;
+------------
+
 -- teste for operations geo_box --
 SELECT geo_box_contain(box_from_text('BOX (7 7, 1 2)'), box_from_text('BOX (6 6, 2 2)'));
 SELECT geo_box_contain(box_from_text('BOX (15 7, 1 2)'), box_from_text('BOX (14 7, 10 4)'));

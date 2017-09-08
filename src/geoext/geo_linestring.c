@@ -63,11 +63,11 @@
  */
 
 /*
-  An Hex-String encoding a LineString must have at least:
+  An hex-string used to encode a LineString must have at least:
   - srid: sizeof(int32)
   - npts: sizeof(int32)
   - 2 coordinates: 2 * sizeof(struct coord2d)
-  Note that int hex we will have the double of bytes!
+  Note that in hex we will have the double of bytes!
  */
 #define GEOEXT_MIN_GEOLINESTRING_HEX_LEN \
 (2 * ((2 * sizeof(int32)) + (2 * sizeof(struct coord2d))))
@@ -168,9 +168,7 @@ geo_linestring_out(PG_FUNCTION_ARGS)
   PG_RETURN_CSTRING(hstr);
 }
 
-/*
-* geo_linestring_recv: Convert external binary representation to geo_linestring
-*/
+
 PG_FUNCTION_INFO_V1(geo_linestring_recv);
 
 Datum
@@ -224,9 +222,7 @@ geo_linestring_recv(PG_FUNCTION_ARGS)
   PG_RETURN_GEOLINESTRING_TYPE_P(result);
 }
 
-/*
-* geo_linestring_send: Convert geo_linestring to binary representation
-*/
+
 PG_FUNCTION_INFO_V1(geo_linestring_send);
 
 Datum
@@ -259,7 +255,7 @@ geo_linestring_send(PG_FUNCTION_ARGS)
 
 
 /*
- * geo_line operations
+ * geo_linestring operations
  */
 
 PG_FUNCTION_INFO_V1(geo_linestring_from_text);
@@ -329,6 +325,7 @@ geo_linestring_is_closed(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
+
 PG_FUNCTION_INFO_V1(geo_linestring_length);
 
 Datum
@@ -349,7 +346,6 @@ geo_linestring_length(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 
 }
-
 
 
 PG_FUNCTION_INFO_V1(geo_linestring_intersection_points_v1);
