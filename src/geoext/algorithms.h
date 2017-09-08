@@ -46,7 +46,7 @@
 
 
 /*
- * \brief Tells if c1 and c2 are coincidents.
+ * \brief Tells if c1 and c2 are coincident.
  *
  */
 int equals(struct coord2d* c1, struct coord2d* c2);
@@ -62,10 +62,30 @@ double euclidian_distance(struct coord2d* c1, struct coord2d* c2);
 
 
 /*
- * \brief Computes the length of points.
+ * \brief Computes the length of a linestring defined by the given vertices.
+ *
+ * \pre num_vertices must be at least two.
  *
  */
 double length(struct coord2d* c1, int num_vertices);
+
+
+/*
+ * \brief Computes the perimeter of a polygon.
+ *
+ * \pre num_vertices must be at least four.
+ *
+ */
+double perimeter(struct coord2d *coord, int num_vertices);
+
+
+/*
+ * \brief Computes the area of a polygon.
+ *
+ * \pre num_vertices must be at least four.
+ *
+ */
+double area(struct coord2d *coord, int num_vertices);
 
 
 /*

@@ -26,6 +26,7 @@
  *
  * \author Gilberto Ribeiro de Queiroz
  * \author Fabiana Zioti
+ * \author Rafael Monteiro Mariano
  *
  * \date 2017
  *
@@ -53,9 +54,9 @@
 struct geo_polygon
 {
   int32 vl_len_;  /* Varlena header.                    */
-  int32 npts;     /* Number of points in the polygon.   */
-  int32 srid;     /* The Spatial Reference System ID.   */
   int32 dummy;    /* Padding to make it double aligned. */
+  int32 srid;     /* The Spatial Reference System ID.   */
+  int32 npts;     /* Number of points in the polygon.   */
   struct coord2d coords[FLEXIBLE_ARRAY_MEMBER];   /* The array of polygon vertices.     */
 };
 
@@ -75,7 +76,7 @@ struct geo_polygon
  * geo_polygon operations.
  *
  */
-/*extern Datum geo_polygon_in(PG_FUNCTION_ARGS);
+extern Datum geo_polygon_in(PG_FUNCTION_ARGS);
 extern Datum geo_polygon_out(PG_FUNCTION_ARGS);
 
 extern Datum geo_polygon_recv(PG_FUNCTION_ARGS);
@@ -87,7 +88,6 @@ extern Datum geo_polygon_to_str(PG_FUNCTION_ARGS);
 extern Datum geo_polygon_area(PG_FUNCTION_ARGS);
 extern Datum geo_polygon_perimeter(PG_FUNCTION_ARGS);
 extern Datum geo_polygon_contains_point(PG_FUNCTION_ARGS);
-*/
 
 
 #endif  /* __GEOEXT_GEO_POLYGON_H__ */

@@ -125,7 +125,8 @@ CREATE OR REPLACE FUNCTION geo_point_ge(geo_point, geo_point)
 --
 -- Register the geo_point Data Type
 --
-CREATE TYPE geo_point(
+CREATE TYPE geo_point
+(
     input = geo_point_in,
     output = geo_point_out,
     receive = geo_point_recv,
@@ -138,7 +139,8 @@ CREATE TYPE geo_point(
 --
 -- Create operators to interface geo_point to B-tree index
 --
-CREATE OPERATOR = (
+CREATE OPERATOR =
+(
     LEFTARG = geo_point,
     RIGHTARG = geo_point,
     PROCEDURE = geo_point_eq,
@@ -148,7 +150,8 @@ CREATE OPERATOR = (
     JOIN = scalarltjoinsel
 );
 
-CREATE OPERATOR <> (
+CREATE OPERATOR <>
+(
     LEFTARG = geo_point,
     RIGHTARG = geo_point,
     PROCEDURE = geo_point_ne,
@@ -169,7 +172,8 @@ CREATE OPERATOR <
     JOIN = scalarltjoinsel
 );
 
-CREATE OPERATOR > (
+CREATE OPERATOR >
+(
     LEFTARG = geo_point,
     RIGHTARG = geo_point,
     PROCEDURE = geo_point_gt,
@@ -179,7 +183,8 @@ CREATE OPERATOR > (
     JOIN = scalarltjoinsel
 );
 
-CREATE OPERATOR <= (
+CREATE OPERATOR <=
+(
     LEFTARG = geo_point,
     RIGHTARG = geo_point,
     PROCEDURE = geo_point_le,
@@ -189,7 +194,8 @@ CREATE OPERATOR <= (
     JOIN = scalarltjoinsel
 );
 
-CREATE OPERATOR >= (
+CREATE OPERATOR >=
+(
     LEFTARG = geo_point,
     RIGHTARG = geo_point,
     PROCEDURE = geo_point_ge,
@@ -264,31 +270,31 @@ CREATE OR REPLACE FUNCTION to_str(geo_linestring)
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE OR REPLACE FUNCTION is_closed(geo_linestring)
-   RETURNS boolean
-   AS 'MODULE_PATHNAME', 'geo_linestring_is_closed'
-   LANGUAGE C IMMUTABLE STRICT;
+    RETURNS boolean
+    AS 'MODULE_PATHNAME', 'geo_linestring_is_closed'
+    LANGUAGE C IMMUTABLE STRICT;
 
 CREATE OR REPLACE FUNCTION length(geo_linestring)
-   RETURNS float8
-   AS 'MODULE_PATHNAME', 'geo_linestring_length'
-   LANGUAGE C IMMUTABLE STRICT;
+    RETURNS float8
+    AS 'MODULE_PATHNAME', 'geo_linestring_length'
+    LANGUAGE C IMMUTABLE STRICT;
 
 
 CREATE FUNCTION linestring_to_array(geo_linestring)
-   RETURNS float8[]
-   AS 'MODULE_PATHNAME', 'geo_linestring_to_array'
-   LANGUAGE C IMMUTABLE;
+    RETURNS float8[]
+    AS 'MODULE_PATHNAME', 'geo_linestring_to_array'
+    LANGUAGE C IMMUTABLE;
 
 CREATE OR REPLACE FUNCTION linestring_from_arrays(float8[], float8[])
-   RETURNS geo_linestring
-   AS 'MODULE_PATHNAME', 'geo_linestring_from_array'
-   LANGUAGE C STRICT;
+    RETURNS geo_linestring
+    AS 'MODULE_PATHNAME', 'geo_linestring_from_array'
+    LANGUAGE C STRICT;
 
 CREATE OR REPLACE FUNCTION linestring_intersection_points_v1(IN geo_linestring,
-   OUT x float8, OUT y float8)
-   RETURNS SETOF record
-   AS 'MODULE_PATHNAME', 'geo_linestring_intersection_points_v1'
-   LANGUAGE C IMMUTABLE STRICT;
+    OUT x float8, OUT y float8)
+    RETURNS SETOF record
+    AS 'MODULE_PATHNAME', 'geo_linestring_intersection_points_v1'
+    LANGUAGE C IMMUTABLE STRICT;
 
 
 --
@@ -304,6 +310,87 @@ CREATE TYPE geo_linestring
     storage = extended,
     alignment = double
 );
+
+
+------------------------------------------
+------------------------------------------
+-- Introduces the geo_polygon Data Type --
+------------------------------------------
+------------------------------------------
+
+--
+-- Drop geo_polygon type if it exists and forward its declaration
+--
+DROP TYPE IF EXISTS geo_polygon;
+CREATE TYPE geo_polygon;
+
+
+--
+-- Polygon Input/Output Functions
+--
+CREATE OR REPLACE FUNCTION geo_polygon_in(cstring)
+    RETURNS geo_polygon
+    AS 'MODULE_PATHNAME', 'geo_polygon_in'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION geo_polygon_out(geo_polygon)
+    RETURNS cstring
+    AS 'MODULE_PATHNAME', 'geo_polygon_out'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION geo_polygon_recv(internal)
+    RETURNS geo_polygon
+    AS 'MODULE_PATHNAME','geo_polygon_recv'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION geo_polygon_send(geo_polygon)
+    RETURNS bytea
+    AS 'MODULE_PATHNAME', 'geo_polygon_send'
+    LANGUAGE C IMMUTABLE STRICT;
+
+
+---
+--- Polygon Operators
+---
+CREATE OR REPLACE FUNCTION polygon_from_text(cstring)
+    RETURNS geo_polygon
+    AS 'MODULE_PATHNAME', 'geo_polygon_from_text'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION to_str(geo_polygon)
+    RETURNS cstring
+    AS 'MODULE_PATHNAME', 'geo_polygon_to_str'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION contains(geo_polygon, geo_point)
+    RETURNS cstring
+    AS 'MODULE_PATHNAME', 'geo_polygon_contains_point'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION area(geo_polygon)
+    RETURNS float8
+    AS 'MODULE_PATHNAME', 'geo_polygon_area'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION perimeter(geo_polygon)
+    RETURNS float8
+    AS 'MODULE_PATHNAME', 'geo_polygon_perimeter'
+    LANGUAGE C IMMUTABLE STRICT;
+
+--
+-- Register the geo_linestring Data Type
+--
+CREATE TYPE geo_polygon
+(
+    input = geo_polygon_in,
+    output = geo_polygon_out,
+    receive = geo_polygon_recv,
+    send = geo_polygon_send,
+    internallength = variable,
+    storage = extended,
+    alignment = double
+);
+
 
 ----------------------------------------
 ----------------------------------------

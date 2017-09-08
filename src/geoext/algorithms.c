@@ -176,18 +176,45 @@ double euclidian_distance(struct coord2d *c1, struct coord2d *c2)
 
 double length(struct coord2d *c, int num_vertices)
 {
-  double result = 0.0;
-    
+  assert(num_vertices >= 2);
+
+  double len = 0.0;
+
   const int n = num_vertices - 1;
 
   for(int i = 0; i < n; ++i)
   {
-    result += euclidian_distance(&c[i], &c[i+1]);
-
+    len += euclidian_distance(&c[i], &c[i+1]);
   }
 
-  return result;
+  return len;
+}
 
+
+double perimeter(struct coord2d *coord, int num_vertices)
+{
+  assert(num_vertices >= 4);
+
+  return length(coord, num_vertices);
+}
+
+
+double area(struct coord2d *c, int num_vertices)
+{
+  assert(num_vertices >= 4);
+
+  double a = 0.0;
+
+  const int n = num_vertices - 1;
+
+  for(int i = 0; i < n; ++i)
+  {
+    a += ((c[i].x * c[i+1].y) - (c[i].y * c[i+1].x));
+  }
+
+  a /= 2.0;
+
+  return fabs(a);
 }
 
 

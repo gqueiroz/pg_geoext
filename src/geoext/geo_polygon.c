@@ -26,6 +26,7 @@
  *
  * \author Gilberto Ribeiro de Queiroz
  * \author Fabiana Zioti
+ * \author Rafael Monteiro Mariano
  *
  * \date 2017
  *
@@ -36,6 +37,7 @@
 /* GeoExtension */
 #include "geo_polygon.h"
 #include "algorithms.h"
+#include "geo_point.h"
 #include "hexutils.h"
 #include "wkt.h"
 
@@ -54,3 +56,235 @@
 #include <string.h>
 
 
+/*
+ * Utility macros.
+ */
+
+/*
+  An hex-string used to encode a Polygon must have at least:
+  - srid: sizeof(int32)
+  - npts: sizeof(int32)
+  - 4 coordinates: 4 * sizeof(struct coord2d)
+  Note that in hex we will have the double of bytes!
+ */
+#define GEOEXT_MIN_GEOPOLYGON_HEX_LEN \
+(2 * ((2 * sizeof(int32)) + (4 * sizeof(struct coord2d))))
+
+
+/*
+ * I/O Functions for the geo_polygon data type
+ */
+
+PG_FUNCTION_INFO_V1(geo_polygon_in);
+
+Datum
+geo_polygon_in(PG_FUNCTION_ARGS)
+{
+  char *str = PG_GETARG_CSTRING(0);
+
+  char *hstr = str;
+
+  struct geo_polygon *poly = NULL;
+
+  int hstr_size = strlen(str);
+
+/* compute the number of bytes required to store the polygon */
+  int size = offsetof(struct geo_polygon, srid) + (hstr_size / 2);
+
+  if (hstr_size < GEOEXT_MIN_GEOPOLYGON_HEX_LEN)
+    ereport(ERROR,
+            (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+            errmsg("invalid input syntax for type %s: \"%s\"",
+            "geo_polygon", str)));
+
+  poly = (struct geo_polygon*) palloc(size);
+
+  SET_VARSIZE(poly, size);
+  poly->dummy = 0;
+
+/* decode the hex-string */
+  hex2binary(hstr, hstr_size, (char*)(&poly->srid));
+
+  assert(poly->npts >= 4);
+
+  PG_RETURN_GEOPOLYGON_TYPE_P(poly);
+}
+
+
+PG_FUNCTION_INFO_V1(geo_polygon_out);
+
+Datum
+geo_polygon_out(PG_FUNCTION_ARGS)
+{
+  struct geo_polygon *poly = PG_GETARG_GEOPOLYGON_TYPE_P(0);
+
+/* compute the Polygon size in bytes */
+  int size = ( 2 * sizeof(int32) ) +
+             ( poly->npts * sizeof(struct coord2d) );
+
+/* allocate a buffer for an hex-string (with room for a trailing '\0') */
+  char *hstr = palloc(2 * size + 1);
+
+/* encode the polygon */
+  binary2hex((char*)(&poly->srid), size, hstr);
+
+  PG_RETURN_CSTRING(hstr);
+}
+
+
+PG_FUNCTION_INFO_V1(geo_polygon_recv);
+
+Datum
+geo_polygon_recv(PG_FUNCTION_ARGS)
+{
+  StringInfo  buf = (StringInfo) PG_GETARG_POINTER(0);
+
+  struct geo_polygon *poly = NULL;
+  int32 srid = 0;
+  int32 npts = 0;
+  int base_size = 0;
+  int size = 0;
+
+  if (!PointerIsValid(buf))
+    ereport(ERROR, (errcode (ERRCODE_INVALID_PARAMETER_VALUE),
+                    errmsg("missing argument for geo_polygon_recv")));
+
+  srid = pq_getmsgint(buf, sizeof(int32));
+  npts = pq_getmsgint(buf, sizeof(int32));
+
+  assert(npts >= 4);
+
+  base_size = npts * sizeof(struct coord2d);
+  size = offsetof(struct geo_polygon, coords) + base_size;
+
+  poly = (struct geo_polygon*) palloc(size);
+
+  SET_VARSIZE(poly, size);
+  poly->dummy = 0;
+  poly->srid = srid;
+  poly->npts = npts;
+
+  for (int i = 0; i < npts; ++i)
+  {
+    poly->coords[i].x = pq_getmsgfloat8(buf);
+    poly->coords[i].y = pq_getmsgfloat8(buf);
+  }
+
+  PG_RETURN_GEOPOLYGON_TYPE_P(poly);
+}
+
+
+PG_FUNCTION_INFO_V1(geo_polygon_send);
+
+Datum
+geo_polygon_send(PG_FUNCTION_ARGS)
+{
+  struct geo_polygon *poly = PG_GETARG_GEOPOLYGON_TYPE_P(0);
+
+  StringInfoData buf;
+
+  if (!PointerIsValid(poly))
+    ereport(ERROR, (errcode (ERRCODE_INVALID_PARAMETER_VALUE),
+                    errmsg("missing argument for geo_polygon_send")));
+
+  pq_begintypsend(&buf);
+
+  pq_sendint(&buf, poly->srid, sizeof(int32));
+  pq_sendint(&buf, poly->npts, sizeof(int32));
+
+  for (int i = 0; i < poly->npts; ++i)
+  {
+    pq_sendfloat8(&buf, poly->coords[i].x);
+    pq_sendfloat8(&buf, poly->coords[i].y);
+  }
+
+  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+}
+
+
+/*
+ * geo_polygon operations
+ */
+
+PG_FUNCTION_INFO_V1(geo_polygon_from_text);
+
+Datum
+geo_polygon_from_text(PG_FUNCTION_ARGS)
+{
+  char *str = PG_GETARG_CSTRING(0);
+
+  /*elog(NOTICE, "geo_polygon_from_text called for: %s", str);*/
+
+  int npts = coord_count(str);
+
+  struct geo_polygon *poly = NULL;
+
+  int base_size = npts * sizeof(struct coord2d);
+  int size = offsetof(struct geo_polygon, coords) + base_size;
+
+  if(npts < 4)
+    ereport(ERROR,
+            (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+            errmsg("a polygon must have at least four points")));
+
+  poly = (struct geo_polygon*) palloc(size);
+
+  SET_VARSIZE(poly, size);
+
+  poly->npts = npts;
+
+  geo_polygon_wkt_decode(str, poly);
+
+  PG_RETURN_GEOPOLYGON_TYPE_P(poly);
+}
+
+
+PG_FUNCTION_INFO_V1(geo_polygon_to_str);
+
+Datum
+geo_polygon_to_str(PG_FUNCTION_ARGS)
+{
+  struct geo_polygon *poly = PG_GETARG_GEOPOLYGON_TYPE_P(0);
+
+  PG_RETURN_CSTRING(geo_polygon_wkt_encode(poly));
+}
+
+
+PG_FUNCTION_INFO_V1(geo_polygon_area);
+
+Datum
+geo_polygon_area(PG_FUNCTION_ARGS)
+{
+  struct geo_polygon *poly = PG_GETARG_GEOPOLYGON_TYPE_P(0);
+
+  float8 result = area(poly->coords, poly->npts);
+
+  PG_RETURN_FLOAT8(result);
+}
+
+
+PG_FUNCTION_INFO_V1(geo_polygon_perimeter);
+
+Datum
+geo_polygon_perimeter(PG_FUNCTION_ARGS)
+{
+  struct geo_polygon *poly = PG_GETARG_GEOPOLYGON_TYPE_P(0);
+
+  float8 result = length(poly->coords, poly->npts);
+
+  PG_RETURN_FLOAT8(result);
+}
+
+
+PG_FUNCTION_INFO_V1(geo_polygon_contains_point);
+
+Datum
+geo_polygon_contains_point(PG_FUNCTION_ARGS)
+{
+  struct geo_polygon *poly = PG_GETARG_GEOPOLYGON_TYPE_P(0);
+  struct geo_point *point = PG_GETARG_GEOPOINT_TYPE_P(1);
+
+  int result = point_in_polygon(&point->coord, poly->coords, poly->npts);
+
+  PG_RETURN_BOOL(result);
+}

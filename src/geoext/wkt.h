@@ -110,7 +110,7 @@ void geo_linestring_wkt_decode(char *str, struct geo_linestring* lstr);
 /*
  * \brief Convert a geo_linestring to a WKT string.
  *
- * \param pt  A geo_linestring data.
+ * \param line A geo_linestring data.
  *
  */
 char* geo_linestring_wkt_encode(struct geo_linestring *line);
@@ -119,11 +119,19 @@ char* geo_linestring_wkt_encode(struct geo_linestring *line);
 /*
  * \brief Convert a WKT string to a geo_polygon.
  *
- * \param str  A string with the following format: 'POLYGON(X1 Y1, X2 Y2, ..., Xn Yn)'.
+ * \param str  A string with the following format: 'POLYGON((X1 Y1, X2 Y2, ..., Xn Yn))'.
  * \param poly A geo_polygon data.
  *
  */
-/*void geo_polygon_wkt_decode(char *str, struct geo_polygon* poly);*/
+void geo_polygon_wkt_decode(char *str, struct geo_polygon *poly);
 
+
+/*
+ * \brief Convert a geo_polygon to a WKT string.
+ *
+ * \param poly A geo_polygon data.
+ *
+ */
+char* geo_polygon_wkt_encode(struct geo_polygon *poly);
 
 #endif  /* __GEOEXT_WKT_H__ */
