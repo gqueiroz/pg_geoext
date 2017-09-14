@@ -61,18 +61,6 @@ struct geo_linestring
 
 
 /*
-* It is a auxiliary structure for the function geo_linestring_intersection_points_v1
-*/
-// struct line_reverse_tuple_args
-// {
-//   struct coord2d coord;
-//   int16 typlen;
-//   bool typbyval;
-//   char typalign;
-// };
-
-
-/*
  * geo_linestring is a toastable varlena type.
  *
  * Below we have the fmgr interface macros for dealing with a geo_linestring.

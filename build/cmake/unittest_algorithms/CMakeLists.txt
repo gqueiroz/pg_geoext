@@ -24,6 +24,7 @@
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -pedantic -std=c99 -Winline")
 
 include_directories(${PG_GEOEXT_ABSOLUTE_ROOT_DIR}/src/geoext)
+include_directories(${PostgreSQL_INCLUDE_DIR})
 
 set(PG_GEOEXT_SRC_FILES "${PG_GEOEXT_ABSOLUTE_ROOT_DIR}/src/geoext/algorithms.c"
                         "${PG_GEOEXT_ABSOLUTE_ROOT_DIR}/src/geoext/hexutils.c"
@@ -40,3 +41,5 @@ source_group("Source Files"  FILES ${PG_GEOEXT_SRC_FILES})
 source_group("Header Files"  FILES ${PG_GEOEXT_HDR_FILES})
 
 add_executable(unittest_algorithms ${PG_GEOEXT_SRC_FILES} ${PG_GEOEXT_HDR_FILES})
+
+target_link_libraries(unittest_algorithms ${PostgreSQL_LIBRARY})

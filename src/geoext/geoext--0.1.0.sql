@@ -280,20 +280,20 @@ CREATE OR REPLACE FUNCTION length(geo_linestring)
     LANGUAGE C IMMUTABLE STRICT;
 
 
-CREATE FUNCTION linestring_to_array(geo_linestring)
+CREATE FUNCTION geo_linestring_boundary_points(geo_linestring)
     RETURNS float8[]
-    AS 'MODULE_PATHNAME', 'geo_linestring_to_array'
+    AS 'MODULE_PATHNAME', 'geo_linestring_boundary_points'
     LANGUAGE C IMMUTABLE;
 
-CREATE OR REPLACE FUNCTION linestring_from_arrays(float8[], float8[])
+CREATE OR REPLACE FUNCTION geo_linestring_make(float8[], float8[])
     RETURNS geo_linestring
-    AS 'MODULE_PATHNAME', 'geo_linestring_from_array'
+    AS 'MODULE_PATHNAME', 'geo_linestring_make'
     LANGUAGE C STRICT;
 
-CREATE OR REPLACE FUNCTION linestring_intersection_points_v1(IN geo_linestring,
+CREATE OR REPLACE FUNCTION geo_linestring_intersection(IN geo_linestring,
     OUT x float8, OUT y float8)
     RETURNS SETOF record
-    AS 'MODULE_PATHNAME', 'geo_linestring_intersection_points_v1'
+    AS 'MODULE_PATHNAME', 'geo_linestring_intersection'
     LANGUAGE C IMMUTABLE STRICT;
 
 

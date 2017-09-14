@@ -100,7 +100,7 @@ geo_linestring_in(PG_FUNCTION_ARGS)
             errmsg("invalid input syntax for type %s: \"%s\"",
             "geo_linestring", str)));
 
-  elog(NOTICE, "number of bytes required for LineString '%s': %d", str, size);
+  /*elog(NOTICE, "number of bytes required for LineString '%s': %d", str, size);*/
 
   line = (struct geo_linestring*) palloc(size);
 
