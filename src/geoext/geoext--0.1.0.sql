@@ -304,6 +304,10 @@ CREATE OR REPLACE FUNCTION boundary_v1(geo_linestring)
     AS 'MODULE_PATHNAME', 'geo_linestring_boundary_v1'
     LANGUAGE C STRICT;
 
+CREATE OR REPLACE FUNCTION boundary_v2(geo_linestring)
+    RETURNS SETOF geo_point
+    AS 'MODULE_PATHNAME', 'geo_linestring_boundary_v2'
+    LANGUAGE C STRICT;
 
 
 CREATE FUNCTION geo_linestring_boundary_points(geo_linestring)

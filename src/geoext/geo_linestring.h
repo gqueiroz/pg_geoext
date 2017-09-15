@@ -93,6 +93,9 @@ extern Datum geo_linestring_make_v1(PG_FUNCTION_ARGS);
 /* return the boundary points as a composite pair */
 extern Datum geo_linestring_boundary_v1(PG_FUNCTION_ARGS);
 
+/* return the boundary points as a set of points */
+extern Datum geo_linestring_boundary_v2(PG_FUNCTION_ARGS);
+
 
 extern Datum geo_linestring_boundary_points(PG_FUNCTION_ARGS);
 

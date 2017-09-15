@@ -42,6 +42,7 @@
 
 
 /* PostgreSQL */
+#include <access/htup_details.h> /* for heap_form_tuple() */
 #include <catalog/pg_type.h>
 #include <executor/executor.h> /* for GetAttributeByNum and GetAttributeByName */
 #include <libpq/pqformat.h>
@@ -373,14 +374,134 @@ PG_FUNCTION_INFO_V1(geo_linestring_boundary_v1);
 
 Datum geo_linestring_boundary_v1(PG_FUNCTION_ARGS)
 {
-  /*struct geo_linestring *line = PG_GETARG_GEOLINESTRING_TYPE_P(0);
+  elog(NOTICE, "geo_linestring_boundary_v1 CALL ");
+
+  struct geo_linestring *line = PG_GETARG_GEOLINESTRING_TYPE_P(0);
 
   HeapTuple tuple;
 
-  Datum result;*/
+  TupleDesc tupdesc;
+
+  Oid resultTypeId;
+
+  Datum values[2]; /* first geo_point, second geo_point */
+
+  Datum result;
+
+  struct geo_point *pt1 = (struct geo_point*) palloc(sizeof(struct geo_point));
+
+  struct geo_point *pt2 =  (struct geo_point*) palloc(sizeof(struct geo_point));
+
+  int final_position = line->npts - 1;
+
+  bool isnull[2];
 
 
+  if(!PointerIsValid(line))
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+                    errmsg("LineString argument for boundary is not valid.")));
+
+
+  pt1->coord = line->coords[0];
+  pt1->srid = line->srid;
+  pt1->dummy = 0;
+
+  pt2->coord = line->coords[final_position];
+  pt2->srid = line->srid;
+  pt2->dummy = 0;
+
+  /*elog(NOTICE, "First boundary %g , %g ", pt1->coord.x, pt1->coord.y);*/
+  /*elog(NOTICE, "Last boundary  %g , %g ", pt2->coord.x, pt2->coord.y);*/
+
+
+  /* Build a tuple descriptor for our result type and
+   * check that SQL function definition is set up to return a record*/
+  if (get_call_result_type(fcinfo, &resultTypeId, &tupdesc) != TYPEFUNC_COMPOSITE)
+    ereport(ERROR,
+            (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+             errmsg("function returning record called in context "
+                    "that cannot accept type record")));
+
+  /* make the tuple descriptor known to postgres as valid return type*/
+  BlessTupleDesc(tupdesc);
+
+  values[0] = PointerGetDatum(pt1);
+  values[1] = PointerGetDatum(pt2);
+
+  isnull[0] = FALSE;
+  isnull[1] = FALSE;
+
+  tuple = heap_form_tuple( tupdesc, values, isnull );
+
+  result = HeapTupleGetDatum(tuple);
+  
+  PG_RETURN_DATUM(result);
 }
+
+
+PG_FUNCTION_INFO_V1(geo_linestring_boundary_v2);    /* this is a SRF function */
+
+Datum geo_linestring_boundary_v2(PG_FUNCTION_ARGS)
+{
+  FuncCallContext *funcctx = NULL;
+
+  struct geo_linestring *line = NULL;
+
+  struct geo_point *pt = NULL;
+
+  Datum result = 0;
+
+  if (SRF_IS_FIRSTCALL())
+  {
+    MemoryContext oldcontext;
+
+    elog(NOTICE, "geo_linestring_boundary_v2 first call!");
+
+    funcctx = SRF_FIRSTCALL_INIT();
+
+    funcctx->max_calls = 2;
+
+    oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+
+    line = PG_GETARG_GEOLINESTRING_TYPE_P(0);
+
+    funcctx->user_fctx = line;
+
+    MemoryContextSwitchTo(oldcontext);
+  }
+
+  funcctx = SRF_PERCALL_SETUP();
+
+  if(funcctx->call_cntr <= 1)
+  {
+    line = funcctx->user_fctx;
+  }
+  else
+  {
+    elog(NOTICE, "geo_linestring_boundary_v2 call for done? %ld!", funcctx->call_cntr);
+
+    SRF_RETURN_DONE(funcctx);
+  }
+
+  elog(NOTICE, "geo_linestring_boundary_v2 call %ld!", funcctx->call_cntr);
+
+  pt = (struct geo_point*) palloc(sizeof(struct geo_point));
+
+  pt->coord = (funcctx->call_cntr == 0) ? line->coords[0] : line->coords[line->npts - 1];
+  pt->srid = line->srid;
+  pt->dummy = 0;
+
+  result = PointerGetDatum(pt);
+
+  SRF_RETURN_NEXT(funcctx, result);
+}
+
+
+
+
+
+
+
 
 
 
