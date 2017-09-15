@@ -17,20 +17,7 @@
 # along with pg_geoext. See LICENSE. If not, write to
 # Gilberto Ribeiro de Queiroz at <gribeiro@dpi.inpe.br>.
 #
-# Author: Gilberto Ribeiro de Queiroz
+# Author: Gilberto Ribeiro de Queirox
 #         Fabiana Zioti
 #
 
-cmake_minimum_required(VERSION 2.8.12)
-
-project(pg_geoext)
-
-get_filename_component(PG_GEOEXT_ABSOLUTE_ROOT_DIR "../../" ABSOLUTE)
-
-include_directories(${PG_GEOEXT_ABSOLUTE_ROOT_DIR}/src)
-
-find_package(PostgreSQL)
-
-add_subdirectory(unittest_algorithms)
-
-add_subdirectory(geoext)

@@ -453,3 +453,107 @@ char* geo_linestring_wkt_encode(struct geo_linestring *line)
 
   return str.data;
 }
+
+void geo_polygon_wkt_decode(char *str, struct geo_polygon *poly)
+{
+/* search for the occurence of: 'POLYGON' */
+  char *cp = strcasestr(str, GEOEXT_GEOPOLYGON_WKT_TOKEN);
+
+/* if the substring 'POLYGON' is not found in the text, we have an invalid WKT */
+  if (!PointerIsValid(cp))
+    ereport(ERROR,
+            (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+            errmsg("invalid input syntax for type %s: \"%s\"",
+            "geo_polygon", str)));
+
+/* advance cp to one character past the string 'POLYGON' */
+  cp += GEOEXT_GEOPOLYGON_WKT_TOKEN_LEN;
+
+/* skip whitespaces */
+  while (*cp != '\0' && isspace((unsigned char) *cp))
+    ++cp;
+
+/* we must have reach the first '(' */
+  if(*cp != GEOEXT_GEOM_LDELIM)
+    ereport(ERROR,
+            (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+            errmsg("invalid input syntax for type %s: \"%s\"",
+            "geo_polygon", str)));
+
+  ++cp;
+
+  coord2d_sequence_decode(cp, poly->coords, poly->npts, &cp,
+                          "geo_polygon", str);
+
+/* verify if the coordinate sequence is a ring */
+  if ( (poly->coords[0].x != poly->coords[poly->npts-1].x) ||
+       (poly->coords[0].y != poly->coords[poly->npts-1].y))
+    ereport(ERROR,
+            (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+            errmsg("invalid polygon: first point (%lf %lf) must be equal to last one (%lf %lf)",
+                   poly->coords[0].x, poly->coords[0].y,
+                   poly->coords[poly->npts-1].x, poly->coords[poly->npts-1].y)));
+
+/* skip spaces, if any */
+  while (*cp != '\0' && isspace((unsigned char) *cp))
+    ++cp;
+
+  if(*cp != GEOEXT_GEOM_RDELIM)
+    ereport(ERROR,
+            (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+            errmsg("invalid input syntax for type %s: \"%s\"",
+            "geo_polygon", str)));
+
+  ++cp;
+
+/* skip spaces, if any */
+  while (*cp != '\0' && isspace((unsigned char) *cp))
+    ++cp;
+
+/* if we still have characters, the WKT is invalid */
+  if(*cp != '\0')
+    ereport(ERROR,
+            (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+             errmsg("invalid input syntax for type %s: \"%s\"",
+             "geo_polygon", str)));
+
+/*
+  WKT doesn't have provision for SRID.
+  So, let's prevent instability in unused padded-bytes.
+  The DBMS may do wrong decisions if we don't zero all fields!
+ */
+  poly->dummy = 0;
+  poly->srid = 0;
+}
+
+
+char* geo_polygon_wkt_encode(struct geo_polygon *poly)
+{
+  StringInfoData str;
+
+  initStringInfo(&str);
+
+  appendStringInfoString(&str, GEOEXT_GEOPOLYGON_WKT_TOKEN);
+
+  appendStringInfoChar(&str, GEOEXT_GEOM_LDELIM);
+  appendStringInfoChar(&str, GEOEXT_GEOM_LDELIM);
+
+  for(int i = 0; i < poly->npts; ++i)
+  {
+    if(i != 0)
+      appendStringInfoString(&str, ", ");
+
+    char *xstr = float8out_internal(poly->coords[i].x);
+    char *ystr = float8out_internal(poly->coords[i].y);
+
+    appendStringInfo(&str, "%s %s", xstr, ystr);
+
+    pfree(xstr);
+    pfree(ystr);
+  }
+
+  appendStringInfoChar(&str, GEOEXT_GEOM_RDELIM);
+  appendStringInfoChar(&str, GEOEXT_GEOM_RDELIM);
+
+  return str.data;
+}

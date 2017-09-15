@@ -36,16 +36,18 @@
 /* GeoExtension */
 #include "geo_linestring.h"
 #include "algorithms.h"
+#include "geo_point.h"
 #include "hexutils.h"
 #include "wkt.h"
 
 
 /* PostgreSQL */
+#include <catalog/pg_type.h>
+#include <executor/executor.h> /* for GetAttributeByNum and GetAttributeByName */
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
 #include <utils/array.h>
 #include <utils/lsyscache.h>
-#include <catalog/pg_type.h>
 #include <funcapi.h>
 
 
@@ -63,11 +65,11 @@
  */
 
 /*
-  An Hex-String encoding a LineString must have at least:
+  An hex-string used to encode a LineString must have at least:
   - srid: sizeof(int32)
   - npts: sizeof(int32)
   - 2 coordinates: 2 * sizeof(struct coord2d)
-  Note that int hex we will have the double of bytes!
+  Note that in hex we will have the double of bytes!
  */
 #define GEOEXT_MIN_GEOLINESTRING_HEX_LEN \
 (2 * ((2 * sizeof(int32)) + (2 * sizeof(struct coord2d))))
@@ -90,13 +92,7 @@ geo_linestring_in(PG_FUNCTION_ARGS)
 
   int hstr_size = strlen(str);
 
-  int32 srid = 0;
-
-  int32 npts = 0;
-
-  int size = 0;
-
-  int base_size = 0;
+  int size = offsetof(struct geo_linestring, srid) + (hstr_size / 2);
 
   /*elog(NOTICE, "geo_linestring_in called for: %s", str);*/
 
@@ -106,34 +102,17 @@ geo_linestring_in(PG_FUNCTION_ARGS)
             errmsg("invalid input syntax for type %s: \"%s\"",
             "geo_linestring", str)));
 
-/* get the srid from the hex-string and advance the hstr pointer */
-  hex2binary(hstr, 2 * sizeof(int32), (char*)&srid);
-
-  hstr += 2 * sizeof(int32);
-
-/* get the npts from the hex-string and advance the hstr pointer */
-  hex2binary(hstr, 2 * sizeof(int32), (char*)&npts);
-
-  hstr += 2 * sizeof(int32);
-
-/* compute the number of bytes required to store the linestring */
-  base_size = npts * sizeof(struct coord2d);
-
-  size = offsetof(struct geo_linestring, coords) + base_size;
-
   /*elog(NOTICE, "number of bytes required for LineString '%s': %d", str, size);*/
 
   line = (struct geo_linestring*) palloc(size);
 
   SET_VARSIZE(line, size);
-
-/* set the fields of linestring */
-  line->srid = srid;
-  line->npts = npts;
   line->dummy = 0;
 
-/* read the coordinates from the hex-string*/
-  hex2binary(hstr, 2 * base_size, (char*)(line->coords));
+/* decode the hex-string */
+  hex2binary(hstr, hstr_size, (char*)(&line->srid));
+
+  assert(line->npts >= 2);
 
   PG_RETURN_GEOLINESTRING_TYPE_P(line);
 }
@@ -152,25 +131,15 @@ geo_linestring_out(PG_FUNCTION_ARGS)
 /* allocate a buffer for an hex-string (with room for a trailing '\0') */
   char *hstr = palloc(2 * size + 1);
 
-  char* cp = NULL;
-
   /*elog(NOTICE, "geo_linestring_out called");*/
 
-/* encode the srid and npts */
-  binary2hex((char*)(&line->srid), 2 * sizeof(int32), hstr);
-
-/* advance the bytes used for encoding srid and npts */
-  cp = hstr + 2 * (2 * sizeof(int32));
-
-/* encode the coordinates */
-  binary2hex((char*)line->coords, line->npts * sizeof(struct geo_linestring), cp);
+/* encode from srid on */
+  binary2hex((char*)(&line->srid), size, hstr);
 
   PG_RETURN_CSTRING(hstr);
 }
 
-/*
-* geo_linestring_recv: Convert external binary representation to geo_linestring
-*/
+
 PG_FUNCTION_INFO_V1(geo_linestring_recv);
 
 Datum
@@ -178,7 +147,7 @@ geo_linestring_recv(PG_FUNCTION_ARGS)
 {
   StringInfo  buf = (StringInfo) PG_GETARG_POINTER(0);
 
-  struct geo_linestring *result = NULL;
+  struct geo_linestring *line = NULL;
 
   int32 npts = 0;
 
@@ -197,36 +166,31 @@ geo_linestring_recv(PG_FUNCTION_ARGS)
   srid = pq_getmsgint(buf, sizeof(int32));
   npts = pq_getmsgint(buf, sizeof(int32));
 
+  assert(npts >= 2);
+
   base_size = npts * sizeof(struct coord2d);
 
   size = offsetof(struct geo_linestring, coords) + base_size;
 
-  result = (struct geo_linestring*) palloc(size);
+  line = (struct geo_linestring*) palloc(size);
 
-  SET_VARSIZE(result, size);
-
-  result->srid = srid;
-  result->npts = npts;
-
-/*
-  prevent instability in unused pad bytes!
-  the DBMS may do wrong decisions if we don't zero all fields!
- */
-  result->dummy = 0;
+  SET_VARSIZE(line, size);
+  line->dummy = 0;   /* prevent instability in unused pad bytes!
+                        the DBMS may do wrong decisions if we don't zero all fields! */
+  line->srid = srid;
+  line->npts = npts;
 
   for (int i = 0; i < npts; ++i)
   {
-    result->coords[i].x = pq_getmsgfloat8(buf);
-    result->coords[i].y = pq_getmsgfloat8(buf);
+    line->coords[i].x = pq_getmsgfloat8(buf);
+    line->coords[i].y = pq_getmsgfloat8(buf);
 
   }
 
-  PG_RETURN_GEOLINESTRING_TYPE_P(result);
+  PG_RETURN_GEOLINESTRING_TYPE_P(line);
 }
 
-/*
-* geo_linestring_send: Convert geo_linestring to binary representation
-*/
+
 PG_FUNCTION_INFO_V1(geo_linestring_send);
 
 Datum
@@ -254,12 +218,11 @@ geo_linestring_send(PG_FUNCTION_ARGS)
   }
 
   PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
-
 }
 
 
 /*
- * geo_line operations
+ * geo_linestring operations
  */
 
 PG_FUNCTION_INFO_V1(geo_linestring_from_text);
@@ -329,6 +292,7 @@ geo_linestring_is_closed(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
+
 PG_FUNCTION_INFO_V1(geo_linestring_length);
 
 Datum
@@ -347,96 +311,84 @@ geo_linestring_length(PG_FUNCTION_ARGS)
   result = length((line->coords), (line->npts));
 
   PG_RETURN_FLOAT8(result);
-
 }
 
 
-
-PG_FUNCTION_INFO_V1(geo_linestring_intersection_points_v1);
+PG_FUNCTION_INFO_V1(geo_linestring_make_v2);
 
 Datum
-geo_linestring_intersection_points_v1(PG_FUNCTION_ARGS)
+geo_linestring_make_v2(PG_FUNCTION_ARGS)
 {
-    FuncCallContext     *funcctx;
-    int                  call_cntr;
-    int                  max_calls;
-    TupleDesc            tupdesc;
-    AttInMetadata       *attinmeta;
-    struct geo_linestring *line = PG_GETARG_GEOLINESTRING_TYPE_P(0);
-    // struct geo_linestring *line2;
+  HeapTupleHeader pt_pair = PG_GETARG_HEAPTUPLEHEADER(0);
+  
+  bool isnull = false;
+  
+  struct geo_point *pt1 = NULL;
+  struct geo_point *pt2 = NULL;
+  
+  struct geo_linestring *line = NULL;
+  
+  Datum first = 0;
+  Datum second = 0;
+  
+  int size = 0;
+  
+  first = GetAttributeByName(pt_pair, "first", &isnull);
+  
+  if(isnull)
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+                   errmsg("linestring_make_v2 accept a pair of points: first component not provided.")));
+  
+  second = GetAttributeByNum(pt_pair, 2, &isnull);
+  
+  if(isnull)
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+                   errmsg("linestring_make_v2 accept a pair of points: second component not provided.")));
+  
+  pt1 = DatumGetGeoPointTypeP(first);
+  pt2 = DatumGetGeoPointTypeP(second);
+    
+  if(pt1->srid != pt2->srid)
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+                   errmsg("linestring_make_v2: first (%d) and second (%d) components have different SRIDs.",
+                   pt1->srid, pt2->srid)));
 
-    /* elog(NOTICE, "geo_linestring_intersection_points_v1 called");*/
+  size = offsetof(struct geo_linestring, coords) + 2 * sizeof(struct coord2d);
 
-    /* stuff done only on the first call of the function */
-    if (SRF_IS_FIRSTCALL())
-    {
-        MemoryContext   oldcontext;
+  line = (struct geo_linestring*) palloc(size);
 
-        /* create a function context for cross-call persistence */
-        funcctx = SRF_FIRSTCALL_INIT();
+  SET_VARSIZE(line, size);
 
-        /* switch to memory context appropriate for multiple function calls */
-        oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+  line->dummy = 0;
+  line->srid = pt1->srid;
+  line->npts = 2;
+  line->coords[0] = pt1->coord;
+  line->coords[1] = pt2->coord;
 
-        /* total number of tuples to be returned */
-        funcctx->max_calls = line->npts;
-
-        /* Build a tuple descriptor for our result type */
-        if (get_call_result_type(fcinfo, NULL, &tupdesc) != TYPEFUNC_COMPOSITE)
-            ereport(ERROR,
-                    (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-                     errmsg("function returning record called in context "
-                            "that cannot accept type record")));
-
-        /*
-         * generate attribute metadata needed later to produce tuples from raw
-         * C strings
-         */
-        attinmeta = TupleDescGetAttInMetadata(tupdesc);
-        funcctx->attinmeta = attinmeta;
-
-        MemoryContextSwitchTo(oldcontext);
-    }
-
-    /* stuff done on every call of the function */
-    funcctx = SRF_PERCALL_SETUP();
-
-    call_cntr = funcctx->call_cntr;
-    max_calls = funcctx->max_calls;
-    attinmeta = funcctx->attinmeta;
-
-    if (call_cntr < max_calls)    /* do when there is more left to send */
-    {
-        char       **values;
-        HeapTuple    tuple;
-        Datum        result;
-
-        values = (char **) palloc(2 * sizeof(char *));
-        values[0] = (char *) palloc(8 * sizeof(char));
-        values[1] = (char *) palloc(8 * sizeof(char));
-
-        snprintf(values[0], 8, "%g", line->coords[call_cntr].x);
-        snprintf(values[1], 8, "%g", line->coords[call_cntr].y);
-
-        /* build a tuple */
-        tuple = BuildTupleFromCStrings(attinmeta, values);
-
-        /* make the tuple into a datum */
-        result = HeapTupleGetDatum(tuple);
-
-        SRF_RETURN_NEXT(funcctx, result);
-    }
-    else    /* do when there is no more left */
-    {
-        SRF_RETURN_DONE(funcctx);
-    }
+  PG_RETURN_GEOLINESTRING_TYPE_P(line);
 }
 
 
-PG_FUNCTION_INFO_V1(geo_linestring_to_array);
+PG_FUNCTION_INFO_V1(geo_linestring_boundary_v1);
+
+Datum geo_linestring_boundary_v1(PG_FUNCTION_ARGS)
+{
+  /*struct geo_linestring *line = PG_GETARG_GEOLINESTRING_TYPE_P(0);
+
+  HeapTuple tuple;
+
+  Datum result;*/
+
+
+}
+
+
+
+
+PG_FUNCTION_INFO_V1(geo_linestring_boundary_points);
 
 Datum
-geo_linestring_to_array(PG_FUNCTION_ARGS)
+geo_linestring_boundary_points(PG_FUNCTION_ARGS)
 {
   ArrayType  *result_array;
 
@@ -493,10 +445,11 @@ geo_linestring_to_array(PG_FUNCTION_ARGS)
   PG_RETURN_ARRAYTYPE_P(result_array);
 }
 
-PG_FUNCTION_INFO_V1(geo_linestring_from_array);
+
+PG_FUNCTION_INFO_V1(geo_linestring_make);
 
 Datum
-geo_linestring_from_array(PG_FUNCTION_ARGS)
+geo_linestring_make(PG_FUNCTION_ARGS)
 {
   ArrayType *array_x;
 
@@ -583,4 +536,85 @@ geo_linestring_from_array(PG_FUNCTION_ARGS)
 
   PG_RETURN_GEOLINESTRING_TYPE_P(line);
 
+}
+
+
+PG_FUNCTION_INFO_V1(geo_linestring_intersection);
+
+Datum
+geo_linestring_intersection(PG_FUNCTION_ARGS)
+{
+    FuncCallContext     *funcctx;
+    int                  call_cntr;
+    int                  max_calls;
+    TupleDesc            tupdesc;
+    AttInMetadata       *attinmeta;
+    struct geo_linestring *line = PG_GETARG_GEOLINESTRING_TYPE_P(0);
+    // struct geo_linestring *line2;
+
+    /* elog(NOTICE, "geo_linestring_intersection_points_v1 called");*/
+
+    /* stuff done only on the first call of the function */
+    if (SRF_IS_FIRSTCALL())
+    {
+        MemoryContext   oldcontext;
+
+        /* create a function context for cross-call persistence */
+        funcctx = SRF_FIRSTCALL_INIT();
+
+        /* switch to memory context appropriate for multiple function calls */
+        oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+
+        /* total number of tuples to be returned */
+        funcctx->max_calls = line->npts;
+
+        /* Build a tuple descriptor for our result type */
+        if (get_call_result_type(fcinfo, NULL, &tupdesc) != TYPEFUNC_COMPOSITE)
+            ereport(ERROR,
+                    (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+                     errmsg("function returning record called in context "
+                            "that cannot accept type record")));
+
+        /*
+         * generate attribute metadata needed later to produce tuples from raw
+         * C strings
+         */
+        attinmeta = TupleDescGetAttInMetadata(tupdesc);
+        funcctx->attinmeta = attinmeta;
+
+        MemoryContextSwitchTo(oldcontext);
+    }
+
+    /* stuff done on every call of the function */
+    funcctx = SRF_PERCALL_SETUP();
+
+    call_cntr = funcctx->call_cntr;
+    max_calls = funcctx->max_calls;
+    attinmeta = funcctx->attinmeta;
+
+    if (call_cntr < max_calls)    /* do when there is more left to send */
+    {
+        char       **values;
+        HeapTuple    tuple;
+        Datum        result;
+
+        values = (char **) palloc(2 * sizeof(char *));
+        values[0] = (char *) palloc(8 * sizeof(char));
+        values[1] = (char *) palloc(8 * sizeof(char));
+
+        snprintf(values[0], 8, "%g", line->coords[call_cntr].x);
+        snprintf(values[1], 8, "%g", line->coords[call_cntr].y);
+
+        /* build a tuple */
+        tuple = BuildTupleFromCStrings(attinmeta, values);
+
+        /* make the tuple into a datum */
+        result = HeapTupleGetDatum(tuple);
+
+        SRF_RETURN_NEXT(funcctx, result);
+    }
+    else    /* do when there is no more left */
+    {
+        SRF_RETURN_DONE(funcctx);
+    }
 }

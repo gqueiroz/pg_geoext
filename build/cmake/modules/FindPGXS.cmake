@@ -21,16 +21,17 @@
 #         Fabiana Zioti
 #
 
-cmake_minimum_required(VERSION 2.8.12)
+#
+#  Description: Find the PostgreSQL installation and compilation flags.
+#
+#  PGXS_INCLUDE_DIR   - where to find:
+#                       /.../include/postgresql/server/
+    
+#  PGXS_LIBRARIES     - where to find geos library.
+#  PGXS_CFLAGS        - where to find geos library.
+#  PGXS_CXXFLAGS      - where to find geos library.
+#  PGXS_FOUND         - True if GEOS is found.
+#
+#  Author: Gilberto Ribeiro de Queiroz
+#
 
-project(pg_geoext)
-
-get_filename_component(PG_GEOEXT_ABSOLUTE_ROOT_DIR "../../" ABSOLUTE)
-
-include_directories(${PG_GEOEXT_ABSOLUTE_ROOT_DIR}/src)
-
-find_package(PostgreSQL)
-
-add_subdirectory(unittest_algorithms)
-
-add_subdirectory(geoext)
