@@ -42,13 +42,13 @@
 
 
 /* PostgreSQL */
+#include <catalog/pg_type.h>
+#include <executor/executor.h> /* for GetAttributeByNum and GetAttributeByName */
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
 #include <utils/array.h>
 #include <utils/lsyscache.h>
-#include <catalog/pg_type.h>
 #include <funcapi.h>
-#include <executor/executor.h> /* for GetAttributeByNum and GetAttributeByName */
 
 
 /* C Standard Library */
@@ -367,6 +367,22 @@ geo_linestring_make_v2(PG_FUNCTION_ARGS)
 
   PG_RETURN_GEOLINESTRING_TYPE_P(line);
 }
+
+
+PG_FUNCTION_INFO_V1(geo_linestring_boundary_v1);
+
+Datum geo_linestring_boundary_v1(PG_FUNCTION_ARGS)
+{
+  /*struct geo_linestring *line = PG_GETARG_GEOLINESTRING_TYPE_P(0);
+
+  HeapTuple tuple;
+
+  Datum result;*/
+
+
+}
+
+
 
 
 PG_FUNCTION_INFO_V1(geo_linestring_boundary_points);

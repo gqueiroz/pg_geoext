@@ -90,6 +90,9 @@ extern Datum geo_linestring_length(PG_FUNCTION_ARGS);
 /* create a geo_linestring from a pair of points represented by a composite */
 extern Datum geo_linestring_make_v1(PG_FUNCTION_ARGS);
 
+/* return the boundary points as a composite pair */
+extern Datum geo_linestring_boundary_v1(PG_FUNCTION_ARGS);
+
 
 extern Datum geo_linestring_boundary_points(PG_FUNCTION_ARGS);
 
