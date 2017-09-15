@@ -221,6 +221,21 @@ CREATE OPERATOR CLASS btree_geo_point_ops
 
 ---------------------------------------------
 ---------------------------------------------
+-- ??????????????????????????????????????? --
+---------------------------------------------
+---------------------------------------------
+
+CREATE TYPE geo_point_pair AS
+(
+    first geo_point,
+    second geo_point
+);
+
+
+
+
+---------------------------------------------
+---------------------------------------------
 -- Introduces the geo_linestring Data Type --
 ---------------------------------------------
 ---------------------------------------------
@@ -278,6 +293,12 @@ CREATE OR REPLACE FUNCTION length(geo_linestring)
     RETURNS float8
     AS 'MODULE_PATHNAME', 'geo_linestring_length'
     LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION linestring_make_v2(geo_point_pair)
+    RETURNS geo_linestring
+    AS 'MODULE_PATHNAME', 'geo_linestring_make_v2'
+    LANGUAGE C STRICT;
+
 
 
 CREATE FUNCTION geo_linestring_boundary_points(geo_linestring)

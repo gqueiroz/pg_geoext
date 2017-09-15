@@ -36,6 +36,7 @@
 /* GeoExtension */
 #include "geo_linestring.h"
 #include "algorithms.h"
+#include "geo_point.h"
 #include "hexutils.h"
 #include "wkt.h"
 
@@ -47,6 +48,7 @@
 #include <utils/lsyscache.h>
 #include <catalog/pg_type.h>
 #include <funcapi.h>
+#include <executor/executor.h> /* for GetAttributeByNum and GetAttributeByName */
 
 
 /* C Standard Library */
@@ -309,6 +311,61 @@ geo_linestring_length(PG_FUNCTION_ARGS)
   result = length((line->coords), (line->npts));
 
   PG_RETURN_FLOAT8(result);
+}
+
+
+PG_FUNCTION_INFO_V1(geo_linestring_make_v2);
+
+Datum
+geo_linestring_make_v2(PG_FUNCTION_ARGS)
+{
+  HeapTupleHeader pt_pair = PG_GETARG_HEAPTUPLEHEADER(0);
+  
+  bool isnull = false;
+  
+  struct geo_point *pt1 = NULL;
+  struct geo_point *pt2 = NULL;
+  
+  struct geo_linestring *line = NULL;
+  
+  Datum first = 0;
+  Datum second = 0;
+  
+  int size = 0;
+  
+  first = GetAttributeByName(pt_pair, "first", &isnull);
+  
+  if(isnull)
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+                   errmsg("linestring_make_v2 accept a pair of points: first component not provided.")));
+  
+  second = GetAttributeByNum(pt_pair, 2, &isnull);
+  
+  if(isnull)
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+                   errmsg("linestring_make_v2 accept a pair of points: second component not provided.")));
+  
+  pt1 = DatumGetGeoPointTypeP(first);
+  pt2 = DatumGetGeoPointTypeP(second);
+    
+  if(pt1->srid != pt2->srid)
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+                   errmsg("linestring_make_v2: first (%d) and second (%d) components have different SRIDs.",
+                   pt1->srid, pt2->srid)));
+
+  size = offsetof(struct geo_linestring, coords) + 2 * sizeof(struct coord2d);
+
+  line = (struct geo_linestring*) palloc(size);
+
+  SET_VARSIZE(line, size);
+
+  line->dummy = 0;
+  line->srid = pt1->srid;
+  line->npts = 2;
+  line->coords[0] = pt1->coord;
+  line->coords[1] = pt2->coord;
+
+  PG_RETURN_GEOLINESTRING_TYPE_P(line);
 }
 
 

@@ -87,7 +87,16 @@ extern Datum geo_linestring_to_str(PG_FUNCTION_ARGS);
 extern Datum geo_linestring_is_closed(PG_FUNCTION_ARGS);
 extern Datum geo_linestring_length(PG_FUNCTION_ARGS);
 
+/* create a geo_linestring from a pair of points represented by a composite */
+extern Datum geo_linestring_make_v1(PG_FUNCTION_ARGS);
+
+
 extern Datum geo_linestring_boundary_points(PG_FUNCTION_ARGS);
+
+/* return the boundary as a composite */
+/*extern Datum geo_linestring_boundary_points_v2(PG_FUNCTION_ARGS);*/
+
+
 
 extern Datum geo_linestring_make(PG_FUNCTION_ARGS);
 
