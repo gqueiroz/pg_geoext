@@ -4,34 +4,35 @@ pg_geoext is a spatial extension prototype for teaching spatial database classes
 
 ## Status
 ---
+Extension in development
+
 ## Requeriments
 ---
+The pg_geoext has no dependencies other than PostgreSQL.
+
 ## Building & Installation
 ---
+To build it, just do this:
+
+    src/
+    make
+    make install
+
 ## Usage
 ---
-For more information read the doc
 
-``` sql
+```sql
 CREATE EXTENSION geoext;
-SELECT geo_point_to_str('POINT (22.2 33.2);SRID = 4356'::geo_point)
-SELECT 'POLYGON ((1 2),(12 6 ),(5 9),(1 2));SRID = 4556'::geo_polygon
+
+SELECT point_from_text('POINT(31.3168034143746 29.5994637720287)');
+SELECT linestring_from_text('LINESTRING(0 0, 10 10)'));
 ```
-### Types:
 
-* point(x,y)
-* polygon((x1 y1), (x2 y3) .... (x1 y1))
+For more examples see doc/geoext-example.sql
 
-### Functions:
+## Types:
 ```c
-geo_point_to_str();
-geo_point_from_text();
-geo_point_distance();
-
-geo_polygon_area();
-geo_polygon_perimeter();
+* POINT (12 45)
+* LINESTRING (10 10, 12 13, 10 10)
+* POLYGON((0 0, 10 0, 10 10, 0 10, 00))
 ```
-
-## Observation:
-
-The input and output  of geo_point is hex
