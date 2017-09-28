@@ -110,7 +110,7 @@ trajectory_elem_in(PG_FUNCTION_ARGS)
 
   PG_RETURN_GEOTRAJE_TYPE_P(traje);
 
-};
+}
 
 PG_FUNCTION_INFO_V1(trajectory_elem_out);
 
@@ -119,34 +119,28 @@ trajectory_elem_out(PG_FUNCTION_ARGS)
 {
   struct geo_trajc_elem *traje = PG_GETARG_GEOTRAJE_TYPE_P(0);
 
-  char *timestamp = palloc(2 * sizeof(Timestamp) + 1);
-  char *point = palloc(2 * sizeof(struct geo_point) + 1);
+  int size = sizeof(Timestamp) + sizeof(struct geo_point);
 
-  StringInfoData final_hex;
-  initStringInfo(&final_hex);
+  char *hstr = palloc(2 * size + 1);
 
+  char *cp = NULL;
   /*elog(NOTICE, "trajectory_elem_out CALL ");*/
 
   if (!PointerIsValid(traje))
     ereport(ERROR, (errcode (ERRCODE_INVALID_PARAMETER_VALUE),
                     errmsg("missing argument for trajectory_elem_out")));
 
+  /* get the Timestamp from the hex-string and advance the hstr pointer */
+  binary2hex((char*)(&traje->time_elem), sizeof(Timestamp), hstr);
 
-  timestamp = DatumGetCString(DirectFunctionCall1(timestamp_out, PointerGetDatum(traje->time_elem)));
+  cp = hstr + 2 * sizeof(Timestamp);
 
-  /*elog(NOTICE, "trajectory_elem_out timestamp: %s", timestamp);*/
+  /*read the geo_point from the hex-string*/
+  binary2hex((char*)(&traje->point_elem), sizeof(struct geo_point), cp);
 
-  point = DatumGetCString(DirectFunctionCall1(geo_point_out, PointerGetDatum(&(traje->point_elem))));
+  PG_RETURN_CSTRING(hstr);
 
-  /*elog(NOTICE, "trajectory_elem_out point point: %s", point);*/
-
-  appendStringInfo(&final_hex, "%s", timestamp);
-  appendStringInfo(&final_hex, "%s", point);
-
-
-  PG_RETURN_CSTRING(final_hex.data);
-
-};
+}
 
 PG_FUNCTION_INFO_V1(get_trajectory_elem);
 
@@ -176,7 +170,7 @@ get_trajectory_elem(PG_FUNCTION_ARGS)
   /*elog(NOTICE,"get_trajectory_elem getall ");*/
 
   PG_RETURN_GEOTRAJE_TYPE_P(traje);
-};
+}
 
 PG_FUNCTION_INFO_V1(tst_trajectory);
 
